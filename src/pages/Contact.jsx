@@ -3,7 +3,7 @@ import React from "react";
 function Contact() {
   return (
     <div>
-      <main className="lg:px-20 mt-20">
+      <main className="lg:px-20 mt-10">
         {/* <!-- hyperlink section --> */}
         <section className="container mx-auto px-10">
           <ul className="flex gap-3">

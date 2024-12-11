@@ -1,63 +1,123 @@
 import { assets } from "../assets/assets";
 import { Link } from "react-router-dom";
+
 function Footer() {
   return (
-    <div>
-      <footer className="flex flex-col sm:flex-row sm:flex-wrap gap-5 justify-around text-white px-10 lg:p-10 p-16">
-        <div className="flex flex-col gap-5 max-w-xs">
+    <div className="bg-red-500 text-white">
+      <footer className="flex flex-col sm:flex-row flex-wrap gap-10 justify-around px-6 py-12 lg:px-16">
+        {/* About Section */}
+        <div className="flex flex-col gap-4 max-w-sm">
           <h3 className="font-bold text-xl tracking-wide">BATA NIGERIA</h3>
           <p className="font-medium">Subscribe</p>
           <p>Get 10% off your first order</p>
-          <div className="border flex max-w-[250px]">
+          <div className="flex items-center rounded-lg overflow-hidden">
             <input
               type="email"
-              placeholder="enter your email"
-              className="w-full p-2"
+              placeholder="Enter your email"
+              className="w-full p-3 bg-red-400 text-white placeholder-white/70 focus:outline-none"
             />
-            <i className="far fa-paper-plane p-2"></i>
+            <button className="p-3 bg-red-700 hover:bg-red-800 text-white font-bold transition-all">
+              <i className="far fa-paper-plane"></i>
+              Submit
+            </button>
           </div>
         </div>
 
-        <div className="flex flex-col gap-5 max-w-xs">
+        {/* Support Section */}
+        <div className="flex flex-col gap-4 max-w-sm">
           <h3 className="font-bold text-xl tracking-wide">Support</h3>
           <p className="font-medium">Bata Nigeria Enugu</p>
           <p>batanigeria@gmail.com</p>
           <p>+234-90-456-789</p>
         </div>
 
-        <div className="flex flex-col gap-2 max-w-xs">
+        {/* Account Section */}
+        <div className="flex flex-col gap-4 max-w-sm">
           <h3 className="font-bold text-xl tracking-wide">Account</h3>
-          <ul className="flex flex-col gap-5">
-            <li>My Account</li>
-            <li>Login / Register</li>
-            <li>Cart</li>
-            <li>Wishlist</li>
-            <li>Shop</li>
+          <ul className="flex flex-col gap-2">
+            <li>
+              <Link className="hover:text-gray-300" to="/account">
+                My Account
+              </Link>
+            </li>
+            <li>
+              <Link className="hover:text-gray-300" to="/login">
+                Login / Register
+              </Link>
+            </li>
+            <li>
+              <Link className="hover:text-gray-300" to="/cart">
+                Cart
+              </Link>
+            </li>
+            <li>
+              <Link className="hover:text-gray-300" to="/wishlist">
+                Wishlist
+              </Link>
+            </li>
+            <li>
+              <Link className="hover:text-gray-300" to="/shop">
+                Shop
+              </Link>
+            </li>
           </ul>
         </div>
 
-        <div className="flex flex-col gap-5 max-w-xs">
-          <h3 className="font-bold text-xl tracking-wide">Quick Link</h3>
-          <ul className="flex flex-col gap-5">
-            <li>Privacy Policy</li>
-            <li>Terms Of Use</li>
-            <li>FAQ</li>
-            <li>Contact</li>
+        {/* Quick Links Section */}
+        <div className="flex flex-col gap-4 max-w-sm">
+          <h3 className="font-bold text-xl tracking-wide">Quick Links</h3>
+          <ul className="flex flex-col gap-2">
+            <li>
+              <Link className="hover:text-gray-300" to="/privacy-policy">
+                Privacy Policy
+              </Link>
+            </li>
+            <li>
+              <Link className="hover:text-gray-300" to="/terms">
+                Terms Of Use
+              </Link>
+            </li>
+            <li>
+              <Link className="hover:text-gray-300" to="/faq">
+                FAQ
+              </Link>
+            </li>
+            <li>
+              <Link className="hover:text-gray-300" to="/contact">
+                Contact
+              </Link>
+            </li>
           </ul>
         </div>
 
-        <div className="flex gap-10 mt-5 sm:mt-0">
-          {/* <i className="fab fa-twitter"></i> */}
-          <img src={assets.facebook} className="h-6" alt="" />
-          <img src={assets.instagram} className="h-6" alt="" />
-          <img src={assets.linkedin} className="h-6" alt="" />
-          <i className="fab fa-facebook-square"></i>
-          <i className="fab fa-instagram"></i>
-          <i className="fab fa-linkedin"></i>
+        {/* Social Media Icons */}
+        <div className="flex gap-5 mt-5 sm:mt-0">
+          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+            <img
+              src={assets.facebook}
+              className="h-6 hover:opacity-80"
+              alt="Facebook"
+            />
+          </a>
+          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+            <img
+              src={assets.instagram}
+              className="h-6 hover:opacity-80"
+              alt="Instagram"
+            />
+          </a>
+          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
+            <img
+              src={assets.linkedin}
+              className="h-6 hover:opacity-80"
+              alt="LinkedIn"
+            />
+          </a>
         </div>
       </footer>
     </div>
   );
 }
+
 
 export default Footer;

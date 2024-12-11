@@ -11,10 +11,9 @@ function Home() {
   return (
     <div>
       <Hero />
-
       <SalesHome />
       <ProductCard />
-      <FeaturedSection />
+      {/* <FeaturedSection /> */}
       <BrandsSection />
       <CustomerReviews />
       <LocationsSection />

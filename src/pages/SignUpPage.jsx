@@ -138,12 +138,12 @@ const SignUpPage = () => {
           </div>
 
           {/* Sign up with Google */}
-          <div className="border border-gray-400 rounded-lg flex justify-center items-center py-3 hover:shadow-md transition">
+          {/* <div className="border border-gray-400 rounded-lg flex justify-center items-center py-3 hover:shadow-md transition">
             <i className="fab fa-google text-red-500 mr-2"></i>
             <button className="text-black font-medium">
               Sign up with Google
             </button>
-          </div>
+          </div> */}
         </form>
 
         {/* Already have an account */}

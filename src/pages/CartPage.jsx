@@ -1,36 +1,85 @@
-import { useContext, useEffect, useState } from "react";
-import { ShopContext } from "../context/ShopContext";
-import { assets } from "../assets/assets";
-import CartTotal from "../components/CartTotal";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { updateCart, selectCartItems } from "../utils/slicers/cartSlice";
+import { updateQuantity as updateCartQuantity, removeFromCart } from "../utils/api/cart";
+import { addNotification } from "../utils/slicers/notificationSlice";
+import { BASE_URL } from "../utils/variables";
+import CartTotal from "../components/CartTotal";
 
 const CartPage = () => {
-  const { products, currency, cartItems, updateQuantity, navigate } =
-    useContext(ShopContext);
-
-  const [cartData, setCartData] = useState([]);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const cartItems = useSelector(selectCartItems || []);
+  const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const tempData = [];
-    for (const items in cartItems) {
-      for (const item in cartItems[items]) {
-        if (cartItems[items][item] > 0) {
-          tempData.push({
-            _id: items,
-            size: item,
-            quantity: cartItems[items][item],
-          });
-        }
-      }
+    if (!isAuthenticated) {
+      // navigate('/login');
     }
-    setCartData(tempData);
-  }, [cartItems]);
+  }, [isAuthenticated, navigate]);
+
+  const handleQuantityUpdate = async (itemId, quantity) => {
+    try {
+      const response = await updateCartQuantity({
+        itemId,
+        data: { quantity }
+      });
+
+      if (response.status) {
+        dispatch(updateCart({
+          cart: response.data.cart,
+          total: response.data.total,
+          itemCount: response.data.itemCount
+        }));
+      } else {
+        throw new Error(response.message || 'Failed to update quantity');
+      }
+    } catch (error) {
+      dispatch(addNotification({
+        type: "error",
+        title: "Error",
+        description: error.message || "Failed to update quantity"
+      }));
+    }
+  };
+
+  const handleRemoveItem = async (itemId) => {
+    try {
+      setIsLoading(true);
+      const response = await removeFromCart({ itemId });
+
+      if (response.status) {
+        dispatch(updateCart({
+          cart: response.data.cart,
+          total: response.data.total,
+          itemCount: response.data.itemCount
+        }));
+        dispatch(addNotification({
+          type: "success",
+          title: "Success",
+          description: "Item removed from cart"
+        }));
+      } else {
+        throw new Error(response.message || 'Failed to remove item');
+      }
+    } catch (error) {
+      dispatch(addNotification({
+        type: "error",
+        title: "Error",
+        description: error.message || "Failed to remove item"
+      }));
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <main className="lg:px-20 mt-20">
-      {/* Hyperlink Section */}
-      <section className="container mx-auto px-10 mb-10">
-        <ul className="flex gap-3">
+    <main className="min-h-screen py-10 px-4 lg:px-20">
+      {/* Breadcrumb */}
+      <section className="container mx-auto mb-10">
+        <ul className="flex gap-3 text-sm">
           <li className="text-slate-400">Home</li>
           <li>/</li>
           <li className="font-medium">Cart</li>
@@ -38,127 +87,159 @@ const CartPage = () => {
       </section>
 
       {/* Cart Section */}
-
-      <section className="container mx-auto px-10 mb-20">
-        <div className="flex-col justify-start items-start gap-20 inline-flex h-auto lg:h-[840px]">
-          <div className="flex-col justify-start items-start gap-6 flex">
-            <div className="flex-col justify-start items-start gap-10 flex">
-              {/* Cart Header */}
-              <div className="w-full lg:w-[1170px] h-[72px] pl-10 pr-[39px] py-6 bg-white rounded shadow justify-center items-center inline-flex">
-                <div className="justify-start items-center gap-[284px] inline-flex">
-                  <h5 className="text-black text-base font-normal font-['Poppins'] leading-normal">
-                    Product
-                  </h5>
-                  <h5 className="text-black text-base font-normal font-['Poppins'] leading-normal">
-                    Price
-                  </h5>
-                  <h5 className="text-black text-base font-normal font-['Poppins'] leading-normal">
-                    Quantity
-                  </h5>
-                  <h5 className="text-black text-base font-normal font-['Poppins'] leading-normal">
-                    Subtotal
-                  </h5>
-                </div>
+      <section className="container mx-auto mb-20">
+        {isLoading ? (
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-[#db4444]"></div>
+          </div>
+        ) : cartItems.length === 0 ? (
+          <div className="text-center py-20">
+            <h3 className="text-2xl font-medium mb-4">Your cart is empty</h3>
+            <button
+              onClick={() => navigate('/')}
+              className="px-6 py-2 bg-[#db4444] text-white rounded hover:bg-[#c03838] transition-colors"
+            >
+              Continue Shopping
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Cart Items List */}
+            <div className="flex-grow">
+              {/* Cart Header - Desktop */}
+              <div className="hidden lg:grid grid-cols-12 gap-4 p-4 bg-white rounded shadow mb-4">
+                <div className="col-span-6 font-medium text-gray-700">Product</div>
+                <div className="col-span-2 text-center font-medium text-gray-700">Price</div>
+                <div className="col-span-2 text-center font-medium text-gray-700">Quantity</div>
+                <div className="col-span-2 text-center font-medium text-gray-700">Subtotal</div>
               </div>
-
               {/* Cart Items */}
-              {cartData.map((item, index) => {
-                const productData = products.find(
-                  (product) => product._id === item._id
-                );
+             
+              {cartItems.map((item) => {
+                // Find the correct variation from product variations array
+                const itemVariation = item.product.variations.find(v => v._id === item.variation);
+
+                // Get price based on whether there's a sale
+                const regularPrice = itemVariation?.price || 0;
+                const salePrice = item.salePrice || regularPrice;
+                const price = item.sale ? salePrice : regularPrice;
+
                 return (
-                  <div
-                    key={index}
-                    className="w-full lg:w-[1170px] h-[102px] relative bg-white rounded shadow"
-                  >
-                    <p className="left-[387px] top-[39px] absolute text-black text-base font-normal font-['Poppins'] leading-normal">
-                      {currency}
-                      {productData.price}
-                    </p>
-                    <p className="left-[1063px] top-[39px] absolute text-black text-base font-normal font-['Poppins'] leading-normal">
-                      {item.size}
-                    </p>
-                    <div className="w-[72px] h-11 px-3 py-1.5 left-[710px] top-[29px] absolute rounded border border-black/40 justify-center items-center inline-flex">
-                      <input
-                        onChange={(e) =>
-                          e.target.value === "" || e.target.value === "0"
-                            ? null
-                            : updateQuantity(
-                                item._id,
-                                item.size,
-                                Number(e.target.value)
-                              )
-                        }
-                        className=" border max-w-10 sm:max-w-20 px-1 sm:px-2 py-1"
-                        type="number"
-                        min={1}
-                        defaultValue={item.quantity}
-                      />
-                    </div>
-                    <div className="w-[54px] h-[54px] px-0.5 pt-2 pb-[7px] left-[40px] top-[24px] absolute justify-center items-center inline-flex">
-                      <img
-                        className="w-[50px] h-[39px]"
-                        src={productData.image[0]}
-                        alt="Product"
-                      />
-                    </div>
-                    <h5 className="left-[114px] top-[39px] absolute text-black text-base font-normal font-['Poppins'] leading-normal">
-                      {productData.name}
-                    </h5>
-                    <div
-                      onClick={() => updateQuantity(item._id, item.size, 0)}
-                      className="w-6 h-6 left-[30px] text-center text-white rounded-full border bg-red-600 top-[20px] absolute"
-                    >
-                      <p>X</p>
+                  <div key={item._id} className="bg-white rounded shadow p-4 mb-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+                      {/* Product Info */}
+                      <div className="lg:col-span-6 flex items-center gap-4">
+                        <button
+                          onClick={() => handleRemoveItem(item._id)}
+                          className="text-red-500 hover:text-red-700 text-xl font-bold"
+                        >
+                          ×
+                        </button>
+                        <img
+                          src={BASE_URL + "/image/" + item.product.images[0]?.filename}
+                          alt={item.product.name}
+                          className="w-16 h-16 object-cover rounded"
+                        />
+                        <div>
+                          <h3 className="font-medium">{item.product.name}</h3>
+                          <p className="text-sm text-gray-500">
+                            Size: {itemVariation?.name}
+                          </p>
+                          {item.sale && (
+                            <p className="text-xs text-[#db4444]">
+                              {item.sale.discountPercentage}% OFF
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Price */}
+                      <div className="lg:col-span-2 text-center">
+                        {item.sale ? (
+                          <div>
+                            <p className="text-[#db4444] font-medium">
+                              NGN {salePrice.toFixed(2)}
+                            </p>
+                            <p className="text-sm text-gray-400 line-through">
+                              NGN {regularPrice.toFixed(2)}
+                            </p>
+                          </div>
+                        ) : (
+                          <p>NGN {price.toFixed(2)}</p>
+                        )}
+                      </div>
+
+                      {/* Quantity */}
+                      <div className="lg:col-span-2 flex justify-center">
+                        <div className="flex items-center border rounded">
+                          <button
+                            onClick={() => handleQuantityUpdate(item._id, item.quantity - 1)}
+                            className="px-3 py-1 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={item.quantity <= 1}
+                          >
+                            -
+                          </button>
+                          <input
+                            type="number"
+                            min="1"
+                            value={item.quantity}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value);
+                              if (value && value > 0) {
+                                handleQuantityUpdate(item._id, value);
+                              }
+                            }}
+                            className="w-12 text-center border-x focus:outline-none"
+                          />
+                          <button
+                            onClick={() => handleQuantityUpdate(item._id, item.quantity + 1)}
+                            className="px-3 py-1 hover:bg-gray-100"
+                            disabled={item.quantity >= itemVariation?.quantity}
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Subtotal */}
+                      <div className="lg:col-span-2 text-center font-medium">
+                        <p className={item.sale ? "text-[#db4444]" : ""}>
+                          NGN {(price * item.quantity).toFixed(2)}
+                        </p>
+                        {item.sale && (
+                          <p className="text-sm text-gray-400 line-through">
+                            NGN {(regularPrice * item.quantity).toFixed(2)}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
               })}
-            </div>
 
-            {/* Buttons for Cart Updates */}
-            <div className="justify-start items-start gap-[757px] inline-flex">
-              <div className="px-12 py-4 rounded border border-black/50 justify-center items-center gap-2.5 flex">
-                <button className="text-black text-base font-medium font-['Poppins'] leading-normal">
-                  Return To Shop
+              {/* Cart Actions */}
+              <div className="flex flex-col sm:flex-row justify-between gap-4 mt-6">
+                <button
+                  onClick={() => navigate('/')}
+                  className="px-6 py-2 border border-black/50 rounded hover:bg-gray-50 transition-colors"
+                >
+                  Continue Shopping
                 </button>
-              </div>
-              <div className="px-12 py-4 rounded border border-black/50 justify-center items-center gap-2.5 flex">
-                <button className="text-black text-base font-medium font-['Poppins'] leading-normal">
-                  Update Cart
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Cart Total */}
-          <div className="justify-start items-start gap-[173px] inline-flex">
-            <div className="justify-start items-end gap-4 flex">
-              <div className="pl-6 pr-[164px] py-4 rounded border border-black justify-start items-center flex">
-                <input
-                  placeholder=" Coupon Code"
-                  className="opacity-50 text-black text-base font-normal font-['Poppins'] leading-normal"
-                />
-              </div>
-              <div className="px-12 py-4 bg-[#db4444] rounded justify-center items-center gap-2.5 flex">
-                <button className="text-[#f9f9f9] text-base font-medium font-['Poppins'] leading-normal">
-                  Apply Coupon
+                <button
+                  onClick={() => navigate('/checkout')}
+                  className="px-6 py-2 bg-[#db4444] text-white rounded hover:bg-[#c03838] transition-colors"
+                >
+                  Proceed to Checkout
                 </button>
               </div>
             </div>
 
-            {/* Cart Total Box */}
-            <CartTotal />
+            {/* Cart Summary */}
+            <div className="lg:w-[400px]">
+              <CartTotal />
+            </div>
           </div>
-          <div className="px-12 py-4  bg-[#db4444] rounded   self-end gap-2.5 inline-flex">
-            <button
-              onClick={() => navigate("/place-order")}
-              className="text-[#f9f9f9] text-base font-medium font-['Poppins'] leading-normal"
-            >
-              Proceed to Checkout
-            </button>
-          </div>
-        </div>
+        )}
       </section>
     </main>
   );

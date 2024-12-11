@@ -1,6 +1,120 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { updateProfile } from "../utils/api/user_api";
+import { setUser } from "../utils/slicers/userSlice";
+import { addNotification } from "../utils/slicers/notificationSlice";
+import Sidebar from "../components/AccountSidebar";
 
 const MyAccountPage = () => {
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user.user);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    billing: {
+      address: '',
+      city: '',
+      state: '',
+      country: '',
+      zipCode: ''
+    }
+  });
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        phone: user.phone || '',
+        billing: {
+          address: user?.billing?.address || '',
+          city: user?.billing?.city || '',
+          state: user?.billing?.state || '',
+          country: user?.billing?.country || '',
+          zipCode: user?.billing?.zipCode || ''
+        }
+      });
+    }
+  }, [user]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name.includes('.')) {
+      const [parent, child] = name.split('.');
+      setFormData(prev => ({
+        ...prev,
+        [parent]: {
+          ...prev[parent],
+          [child]: value
+        }
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const response = await updateProfile({
+        data: {
+          name: formData.name,
+          phone: formData.phone,
+          billing: formData.billing
+        }
+      });
+
+      if (response.status) {
+        dispatch(setUser(response.data));
+        dispatch(addNotification({
+          type: "success",
+          title: "Success",
+          description: "Profile updated successfully"
+        }));
+        setIsEditing(false);
+      } else {
+        dispatch(addNotification({
+          type: "error",
+          title: "Error",
+          description: response?.message || "Failed to update profile"
+        }));
+      }
+    } catch (error) {
+      dispatch(addNotification({
+        type: "error",
+        title: "Error",
+        description: error.message || "Failed to update profile"
+      }));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    // Reset form data to user data
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        phone: user.phone || '',
+        billing: {
+          address: user?.billing?.address || '',
+          city: user?.billing?.city || '',
+          state: user?.billing?.state || '',
+          country: user?.billing?.country || '',
+          zipCode: user?.billing?.zipCode || ''
+        }
+      });
+    }
+  };
+
   return (
     <main className="px-4 lg:px-20 mb-10 mt-10">
       {/* Hyperlink Section */}
@@ -12,119 +126,155 @@ const MyAccountPage = () => {
         </ul>
         <div className="flex items-center text-sm">
           <span className="text-black mr-1">Welcome!</span>
-          <span className="text-red-600">Amina Salihu</span>
+          <span className="text-[#db4444]">{user?.name}</span>
         </div>
       </section>
 
       {/* Main Content */}
       <section className="flex flex-wrap lg:flex-nowrap justify-between gap-8">
         {/* Side Menu */}
-        <aside className="flex-shrink-0 w-full lg:w-1/4">
-          <h4 className="text-black text-base font-medium mb-4">
-            Manage My Account
-          </h4>
-          <div className="flex flex-col gap-4">
-            <h5 className="text-red-600 text-base">My Profile</h5>
-            <p className="text-black text-opacity-50">Address Book</p>
-            <p className="text-black text-opacity-50">My Payment Options</p>
-          </div>
-          <h4 className="text-black text-base font-medium mt-6">My Orders</h4>
-          <div className="flex flex-col gap-4 mt-4">
-            <p className="text-black text-opacity-50">My Returns</p>
-            <p className="text-black text-opacity-50">My Cancellations</p>
-          </div>
-          <h4 className="text-black text-base font-medium mt-6">My Wishlist</h4>
-        </aside>
-
+        <Sidebar/>
         {/* Profile Form */}
-        <div className="w-full lg:w-3/4 bg-white p-8 rounded shadow">
-          <h3 className="text-red-600 text-xl font-medium mb-6">
-            Edit Your Profile
-          </h3>
-          <form className="space-y-6">
-            {/* First Row: Name Fields */}
+        <div className="w-full lg:w-3/4 bg-white p-8 rounded-lg shadow-sm border">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-[#db4444] text-xl font-medium">
+              {isEditing ? 'Edit Your Profile' : 'My Profile'}
+            </h3>
+            {!isEditing && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="px-4 py-2 text-[#db4444] border border-[#db4444] rounded hover:bg-red-50 transition"
+              >
+                Edit Profile
+              </button>
+            )}
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Personal Information */}
             <div className="flex flex-wrap gap-6">
-              <div className="flex-1">
-                <label className="block text-black text-base mb-2">
-                  First Name
+              <div className="flex-1 min-w-[250px]">
+                <label className="block text-black text-sm mb-2">
+                  Full Name
                 </label>
                 <input
                   type="text"
-                  placeholder="Amina"
-                  className="w-full p-3 bg-gray-100 rounded"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                  className="w-full p-3 bg-gray-100 rounded border focus:outline-none focus:ring-2 focus:ring-red-200 disabled:opacity-75"
                 />
               </div>
-              <div className="flex-1">
-                <label className="block text-black text-base mb-2">
-                  Last Name
+              <div className="flex-1 min-w-[250px]">
+                <label className="block text-black text-sm mb-2">
+                  Phone
                 </label>
                 <input
-                  type="text"
-                  placeholder="Salihu"
-                  className="w-full p-3 bg-gray-100 rounded"
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                  className="w-full p-3 bg-gray-100 rounded border focus:outline-none focus:ring-2 focus:ring-red-200 disabled:opacity-75"
                 />
               </div>
             </div>
 
-            {/* Second Row: Email and Address Fields */}
-            <div className="flex flex-wrap gap-6">
-              <div className="flex-1">
-                <label className="block text-black text-base mb-2">Email</label>
-                <input
-                  type="email"
-                  placeholder="aminasalihuwork@gmail.com"
-                  className="w-full p-3 bg-gray-100 rounded"
-                />
+            {/* Billing Information */}
+            <div className="space-y-6">
+              <h4 className="text-lg font-medium">Billing Information</h4>
+              <div className="flex flex-wrap gap-6">
+                <div className="flex-1 min-w-[250px]">
+                  <label className="block text-black text-sm mb-2">
+                    Address
+                  </label>
+                  <input
+                    type="text"
+                    name="billing.address"
+                    value={formData.billing.address}
+                    onChange={handleChange}
+                    disabled={!isEditing}
+                    className="w-full p-3 bg-gray-100 rounded border focus:outline-none focus:ring-2 focus:ring-red-200 disabled:opacity-75"
+                  />
+                </div>
+                <div className="flex-1 min-w-[250px]">
+                  <label className="block text-black text-sm mb-2">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    name="billing.city"
+                    value={formData.billing.city}
+                    onChange={handleChange}
+                    disabled={!isEditing}
+                    className="w-full p-3 bg-gray-100 rounded border focus:outline-none focus:ring-2 focus:ring-red-200 disabled:opacity-75"
+                  />
+                </div>
               </div>
-              <div className="flex-1">
-                <label className="block text-black text-base mb-2">
-                  Address
-                </label>
-                <input
-                  type="text"
-                  placeholder="Lungu Lungu Abuja"
-                  className="w-full p-3 bg-gray-100 rounded"
-                />
+              <div className="flex flex-wrap gap-6">
+                <div className="flex-1 min-w-[250px]">
+                  <label className="block text-black text-sm mb-2">
+                    State
+                  </label>
+                  <input
+                    type="text"
+                    name="billing.state"
+                    value={formData.billing.state}
+                    onChange={handleChange}
+                    disabled={!isEditing}
+                    className="w-full p-3 bg-gray-100 rounded border focus:outline-none focus:ring-2 focus:ring-red-200 disabled:opacity-75"
+                  />
+                </div>
+                <div className="flex-1 min-w-[250px]">
+                  <label className="block text-black text-sm mb-2">
+                    Country
+                  </label>
+                  <input
+                    type="text"
+                    name="billing.country"
+                    value={formData.billing.country}
+                    onChange={handleChange}
+                    disabled={!isEditing}
+                    className="w-full p-3 bg-gray-100 rounded border focus:outline-none focus:ring-2 focus:ring-red-200 disabled:opacity-75"
+                  />
+                </div>
+                <div className="flex-1 min-w-[250px]">
+                  <label className="block text-black text-sm mb-2">
+                    Zip Code
+                  </label>
+                  <input
+                    type="text"
+                    name="billing.zipCode"
+                    value={formData.billing.zipCode}
+                    onChange={handleChange}
+                    disabled={!isEditing}
+                    className="w-full p-3 bg-gray-100 rounded border focus:outline-none focus:ring-2 focus:ring-red-200 disabled:opacity-75"
+                  />
+                </div>
               </div>
-            </div>
-
-            {/* Password Section */}
-            <div>
-              <label className="block text-black text-base mb-2">
-                Password Changes
-              </label>
-              <input
-                type="password"
-                placeholder="Current Password"
-                className="w-full mb-4 p-3 bg-gray-100 rounded"
-              />
-              <input
-                type="password"
-                placeholder="New Password"
-                className="w-full mb-4 p-3 bg-gray-100 rounded"
-              />
-              <input
-                type="password"
-                placeholder="Confirm New Password"
-                className="w-full p-3 bg-gray-100 rounded"
-              />
             </div>
 
             {/* Action Buttons */}
-            <div className="flex justify-end items-center gap-6">
-              <button
-                type="button"
-                className="text-black text-base underline hover:text-gray-600"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-              >
-                Save Changes
-              </button>
-            </div>
+            {isEditing && (
+              <div className="flex justify-end items-center gap-6">
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  disabled={isSubmitting}
+                  className="text-black text-base underline hover:text-gray-600"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-6 py-2 bg-[#db4444] text-white rounded hover:bg-[#c03838] transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            )}
           </form>
         </div>
       </section>

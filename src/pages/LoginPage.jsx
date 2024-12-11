@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
 import { setUserAuth } from "../utils/slicers/userSlice";
 import { addNotification } from "../utils/slicers/notificationSlice";
 import { login } from "../utils/api/user_api";
+import { getCart } from "../utils/api/cart";
+import { updateCart } from "../utils/slicers/cartSlice";
 
 const LoginPage = () => {
   const [credentials, setCredentials] = useState({
@@ -37,9 +39,21 @@ const LoginPage = () => {
 
     setIsLoading(true);
     const { status, message, data } = await login({ data: credentials });
-    if (status) {
-      dispatch(setUserAuth({ user: data.user, token: data.token }));
+    if (status) { 
+      dispatch(setUserAuth({ user: data.user, token: data.token }));    
       navigate("/");
+      const cartResponse = await getCart({})
+      if (cartResponse?.status) {
+        // Match backend response format exactly
+        const { cart, total, itemCount, invalidItems } = cartResponse.data;
+        dispatch(updateCart({
+          cart,
+          total,
+          itemCount,
+          invalidItems
+        }));
+      }
+  
     } else {
       dispatch(
         addNotification({
@@ -84,6 +98,7 @@ const LoginPage = () => {
               placeholder="Password"
               className="w-full px-4 py-2 border-b border-gray-400 text-gray-700 text-base focus:outline-none focus:border-red-500"
             />
+
           </div>
           <div className="flex justify-between items-center w-full mt-6">
             <button
@@ -97,14 +112,10 @@ const LoginPage = () => {
         </form>
 
         {/* Forgot Password */}
-        <div className="mt-4 text-center">
-          <a
-            href="#"
-            className="text-red-600 text-sm font-normal hover:underline"
-          >
-            Forgot Password?
-          </a>
-        </div>
+        <br />
+        <Link to="/forgot-password" className="text-sm text-red-600 hover:underline">
+          Forgot Password?
+        </Link>
       </div>
     </main>
   );

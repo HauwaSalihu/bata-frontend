@@ -1,19 +1,109 @@
-import { useContext, useState } from "react";
+import { useState, useEffect } from "react";
 import CartTotal from "../components/CartTotal";
 import { assets } from "../assets/assets";
-import { ShopContext } from "../context/ShopContext";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { createOrder } from "../utils/api/order";
+import { addNotification } from "../utils/slicers/notificationSlice";
 
 const CheckoutPage = () => {
-  const [method, setMethod] = useState("cod");
+  const [method, setMethod] = useState("paystack");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user.user);
 
-  const { navigate } = useContext(ShopContext);
+  // State for form fields
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    country: '',
+    zipCode: ''
+  });
+
+  // Populate form with user data initially
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        address: user?.billing?.address || '',
+        city: user?.billing?.city || '',
+        state: user?.billing?.state || '',
+        country: user?.billing?.country || '',
+        zipCode: user?.billing?.zipCode || ''
+      });
+    }
+  }, [user]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handlePlaceOrder = async () => {
+    try {
+      setIsProcessing(true);
+
+      // Validate required fields
+      const requiredFields = ['address', 'city', 'state'];
+      const missingFields = requiredFields.filter(field => !formData[field]);
+      
+      if (missingFields.length > 0) {
+        dispatch(addNotification({
+          type: "error",
+          title: "Missing Information",
+          description: "Please fill in all required fields"
+        }));
+        return;
+      }
+
+      const response = await createOrder({
+        data: {
+          shippingAddress: {
+            address: formData.address,
+            city: formData.city,
+            state: formData.state,
+            country: formData.country,
+            zipCode: formData.zipCode,
+          }
+        }
+      });
+
+      if (response.status && response.data?.authorizationUrl) {
+        // Redirect to Paystack checkout page
+        window.location.href = response.data.authorizationUrl;
+      } else {
+        dispatch(addNotification({
+          type: "error",
+          title: "Error",
+          description: response?.message || "Failed to process order"
+        }));
+      }
+    } catch (error) {
+      dispatch(addNotification({
+        type: "error",
+        title: "Error",
+        description: error.message || "Failed to process order"
+      }));
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <main className="lg:px-20 mt-20">
       {/* Hyperlink Section */}
       <section className="container mx-auto px-10 mb-10">
-        <ul className="flex gap-3">
+        <ul className="flex gap-3 text-sm">
           <li className="text-slate-400">Account</li>
           <li>/</li>
           <li className="text-slate-400">My Account</li>
@@ -25,18 +115,16 @@ const CheckoutPage = () => {
           <li className="font-medium">Checkout</li>
         </ul>
       </section>
-      {/* End Hyperlink Section */}
 
       <h3 className="px-10 mb-10 text-black text-4xl font-medium font-['Inter'] leading-[30px] tracking-wider">
         Billing Details
       </h3>
 
-      {/* New Section */}
       <section className="container w-full flex gap-20 mx-auto mb-20 px-10 flex-wrap lg:flex-nowrap">
-        {/* Right Section */}
+        {/* Left Section */}
         <div className="flex-col justify-start items-start gap-6 inline-flex w-full lg:w-1/2">
           <div className="flex-col justify-start items-start gap-8 flex">
-            {/* Form Group */}
+            {/* Name */}
             <div className="flex-col justify-start items-start gap-2 flex">
               <div className="opacity-40">
                 <span className="text-black font-['Poppins'] leading-normal">
@@ -48,20 +136,52 @@ const CheckoutPage = () => {
               </div>
               <input
                 type="text"
-                className="w-full lg:w-[470px] h-[50px] relative bg-neutral-100 rounded"
+                name="name"
+                className="w-full lg:w-[470px] h-[50px] relative bg-neutral-100 rounded px-4"
+                value={formData.name}
+                disabled
               />
             </div>
-            {/* Form Group */}
+
+            {/* Email */}
             <div className="flex-col justify-start items-start gap-2 flex">
-              <p className="opacity-40 text-black text-base font-normal font-['Poppins'] leading-normal">
-                Company Name
-              </p>
+              <div className="opacity-40">
+                <span className="text-black text-base font-normal font-['Poppins'] leading-normal">
+                  Email Address
+                </span>
+                <span className="text-[#db4444] text-base font-normal font-['Poppins'] leading-normal">
+                  *
+                </span>
+              </div>
               <input
-                type="text"
-                className="w-full lg:w-[470px] h-[50px] relative bg-neutral-100 rounded"
+                type="email"
+                name="email"
+                className="w-full lg:w-[470px] h-[50px] relative bg-neutral-100 rounded px-4"
+                value={formData.email}
+                disabled
               />
             </div>
-            {/* Form Group */}
+
+            {/* Phone */}
+            <div className="flex-col justify-start items-start gap-2 flex">
+              <div className="opacity-40">
+                <span className="text-black text-base font-normal font-['Poppins'] leading-normal">
+                  Phone Number
+                </span>
+                <span className="text-[#db4444] text-base font-normal font-['Poppins'] leading-normal">
+                  *
+                </span>
+              </div>
+              <input
+                type="tel"
+                name="phone"
+                className="w-full lg:w-[470px] h-[50px] relative bg-neutral-100 rounded px-4"
+                value={formData.phone}
+                disabled
+              />
+            </div>
+
+            {/* Address */}
             <div className="flex-col justify-start items-start gap-2 flex">
               <div className="opacity-40">
                 <span className="text-black text-base font-normal font-['Poppins'] leading-normal">
@@ -73,20 +193,15 @@ const CheckoutPage = () => {
               </div>
               <input
                 type="text"
-                className="w-full lg:w-[470px] h-[50px] relative bg-neutral-100 rounded"
+                name="address"
+                className="w-full lg:w-[470px] h-[50px] relative bg-white border rounded px-4"
+                value={formData.address}
+                onChange={handleChange}
+                placeholder="Enter your street address"
               />
             </div>
-            {/* Form Group */}
-            <div className="flex-col justify-start items-start gap-2 flex">
-              <p className="opacity-40 text-black text-base font-normal font-['Poppins'] leading-normal">
-                Apartment, floor, etc. (optional)
-              </p>
-              <input
-                type="text"
-                className="w-full lg:w-[470px] h-[50px] relative bg-neutral-100 rounded"
-              />
-            </div>
-            {/* Form Group */}
+
+            {/* City */}
             <div className="flex-col justify-start items-start gap-2 flex">
               <div className="opacity-40">
                 <span className="text-black text-base font-normal font-['Poppins'] leading-normal">
@@ -98,14 +213,19 @@ const CheckoutPage = () => {
               </div>
               <input
                 type="text"
-                className="w-full lg:w-[470px] h-[50px] relative bg-neutral-100 rounded"
+                name="city"
+                className="w-full lg:w-[470px] h-[50px] relative bg-white border rounded px-4"
+                value={formData.city}
+                onChange={handleChange}
+                placeholder="Enter your city"
               />
             </div>
-            {/* Form Group */}
+
+            {/* State */}
             <div className="flex-col justify-start items-start gap-2 flex">
               <div className="opacity-40">
                 <span className="text-black text-base font-normal font-['Poppins'] leading-normal">
-                  Phone Number
+                  State
                 </span>
                 <span className="text-[#db4444] text-base font-normal font-['Poppins'] leading-normal">
                   *
@@ -113,35 +233,15 @@ const CheckoutPage = () => {
               </div>
               <input
                 type="text"
-                className="w-full lg:w-[470px] h-[50px] relative bg-neutral-100 rounded"
+                name="state"
+                className="w-full lg:w-[470px] h-[50px] relative bg-white border rounded px-4"
+                value={formData.state}
+                onChange={handleChange}
+                placeholder="Enter your state"
               />
             </div>
-            {/* Form Group */}
-            <div className="flex-col justify-start items-start gap-2 flex">
-              <div className="opacity-40">
-                <span className="text-black text-base font-normal font-['Poppins'] leading-normal">
-                  Email Address
-                </span>
-                <span className="text-[#db4444] text-base font-normal font-['Poppins'] leading-normal">
-                  *
-                </span>
-              </div>
-              <input
-                type="text"
-                className="w-full lg:w-[470px] h-[50px] relative bg-neutral-100 rounded"
-              />
-            </div>
-          </div>
-          <div className="justify-start items-start gap-4 inline-flex">
-            <div className="w-6 h-6 relative bg-[#db4444] text-center rounded">
-              <i className="fas fa-check text-white"></i>
-            </div>
-            <p className="text-black text-base font-normal font-['Poppins'] leading-normal">
-              Save this information for faster check-out next time
-            </p>
           </div>
         </div>
-        {/* End Right Section */}
 
         {/* Right side */}
         <div className="mt-8">
@@ -149,50 +249,46 @@ const CheckoutPage = () => {
             <CartTotal />
           </div>
           <div className="mt-12">
-            {/* paymen t method selector */}
+            {/* Payment method selector */}
             <div className="flex gap-3 flex-col lg:flex-row">
               <div
-                onClick={() => setMethod("stripe")}
-                className="flex items-center gap-3 border p-2 px-3 cursor-pointer "
+                onClick={() => setMethod("paystack")}
+                className={`flex items-center gap-3 border p-2 px-3 cursor-pointer ${
+                  method === "paystack" ? "border-[#db4444] bg-red-50" : ""
+                }`}
               >
-                <p
-                  className={`min-w-3.5 h-3.5 border rounded-full ${
-                    method === "stripe" ? "bg-green-400" : ""
+                <div
+                  className={`w-4 h-4 rounded-full border-2 ${
+                    method === "paystack" ? "border-[#db4444] bg-[#db4444]" : ""
                   }`}
-                ></p>
-                <img src={assets.stripe_logo} className="h-5 mx-4" alt="" />
+                />
+                <img
+                  src={assets.paystack}
+                  className="h-5 mx-4"
+                  alt="Paystack"
+                />
+                Paystack
               </div>
               <div
-                onClick={() => setMethod("razorpay")}
-                className="flex items-center gap-3 border p-2 px-3 cursor-pointer "
+                className="flex items-center gap-3 border p-2 px-3 cursor-not-allowed opacity-50"
               >
-                <p
-                  className={`min-w-3.5 h-3.5 border rounded-full ${
-                    method === "razorpay" ? "bg-green-400" : ""
-                  }`}
-                ></p>
-                <img src={assets.razorpay_logo} className="h-5 mx-4" alt="" />
-              </div>
-              <div
-                onClick={() => setMethod("cod")}
-                className="flex items-center gap-3 border p-2 px-3 cursor-pointer "
-              >
-                <p
-                  className={`min-w-3.5 h-3.5 border rounded-full ${
-                    method === "cod" ? "bg-green-400" : ""
-                  }`}
-                ></p>
-                <p className="text-gray-500 text-sm font-medium mx-4 ">
-                  CASH ON DELIVERY
+                <div className="w-4 h-4 rounded-full border-2" />
+                <p className="text-gray-500 text-sm font-medium mx-4">
+                  CASH ON DELIVERY (Not Available)
                 </p>
               </div>
             </div>
             <div className="w-full text-end mt-8">
               <button
-                onClick={() => navigate("/orders")}
-                className="bg-[#db4444] text-white px-16 py-3 text-sm"
+                onClick={handlePlaceOrder}
+                disabled={isProcessing}
+                className={`${
+                  isProcessing 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-[#db4444] hover:bg-[#c03838]'
+                } text-white px-16 py-3 text-sm transition-colors`}
               >
-                PLACE ORDER
+                {isProcessing ? 'PROCESSING...' : 'PLACE ORDER'}
               </button>
             </div>
           </div>

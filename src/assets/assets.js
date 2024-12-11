@@ -75,10 +75,12 @@ import cross_icon from "./cross_icon.png";
 import delivery_icon from "./icon-delivery.png";
 import icon_return from "./icon-return.png";
 import wishlist from "./wishlist.png";
+import cart from "./cart.png";
 import elements from "./elements.png";
 import linkedin from "./icon-linkedin.png";
 import instagram from "./group.png";
 import facebook from "./icon-facebook.png";
+import paystack from "./paystack.png";
 
 export const assets = {
   logo,
@@ -102,10 +104,12 @@ export const assets = {
   delivery_icon,
   icon_return,
   wishlist,
+  cart,
   elements,
   instagram,
   facebook,
   linkedin,
+  paystack
 };
 
 export const products = [

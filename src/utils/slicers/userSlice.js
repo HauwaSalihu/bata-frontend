@@ -14,8 +14,10 @@ const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
+    setUser: (state, action) => {
+      state.user = action.payload;
+    },
     setUserAuth: (state, action) => {
-      console.log(action.payload)
       state.user = action.payload.user;
       state.isAuthenticated = true; // Update isAuthenticated based on user data
       state.isLoading = false;
@@ -38,7 +40,7 @@ const userSlice = createSlice({
   },
 });
 
-export const { setUserAuth, setLoading, resetUser } = userSlice.actions;
+export const { setUserAuth,setUser, setLoading, resetUser } = userSlice.actions;
 // export const selectUser = (state) => state.user.user;
 // export const selectIsAuthenticated = (state) => state.user.isAuthenticated;
 // export const selectLoading = (state) => state.user.isLoading;
