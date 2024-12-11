@@ -30,7 +30,7 @@ const Header = () => {
     navigate("/");
   };
 
-  return (<header className="sticky top-0 px-5 lg:px-20 py-2 border-b bg-white z-50 shadow-sm">
+  return (<header className="sticky top-0 px-5 lg:px-20 py-2 border-b bg-white z-40 shadow-sm">
 
       <nav className="flex justify-between items-center">
         {/* Logo */}
