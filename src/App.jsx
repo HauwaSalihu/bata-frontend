@@ -113,7 +113,7 @@ const App = () => {
   }, []);
 
   return (
-    <div style={{ textAlign: "center" }}>
+    <div>
       <Header />
       <Routes>
         <Route path="/" element={<Home />} />
