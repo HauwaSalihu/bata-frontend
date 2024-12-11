@@ -52,7 +52,8 @@ const ProductPage = () => {
           setSelectedPrice(initialVariation.price);
 
           if (response.data.activeSale) {
-            const discountedPrice = initialVariation.price *
+            const discountedPrice =
+              initialVariation.price *
               (1 - response.data.activeSale.discountPercentage / 100);
             setDiscountedPrice(discountedPrice);
           }
@@ -64,7 +65,7 @@ const ProductPage = () => {
         addNotification({
           type: "error",
           title: "Error",
-          description: "Failed to load product details."
+          description: "Failed to load product details.",
         })
       );
     } finally {
@@ -85,8 +86,12 @@ const ProductPage = () => {
         setSelectedPrice(initialVariation.price);
 
         if (product.activeSale || product?.discountPercentage) {
-          const discountedPrice = initialVariation.price *
-            (1 - (product?.activeSale?.discountPercentage || product?.discountPercentage) / 100);
+          const discountedPrice =
+            initialVariation.price *
+            (1 -
+              (product?.activeSale?.discountPercentage ||
+                product?.discountPercentage) /
+                100);
           setDiscountedPrice(discountedPrice);
         }
       }
@@ -100,8 +105,12 @@ const ProductPage = () => {
     setSelectedVariation(variation._id);
     setSelectedPrice(variation.price);
     if (productData?.activeSale || productData.setDiscountedPrice) {
-      const discountedPrice = variation.price *
-        (1 - (productData?.activeSale?.discountPercentage || productData.discountPercentage) / 100);
+      const discountedPrice =
+        variation.price *
+        (1 -
+          (productData?.activeSale?.discountPercentage ||
+            productData.discountPercentage) /
+            100);
       setDiscountedPrice(discountedPrice);
     }
     // Reset quantity when variation changes
@@ -109,7 +118,7 @@ const ProductPage = () => {
   };
 
   const handleQuantityChange = (increment) => {
-    setQuantity(prev => {
+    setQuantity((prev) => {
       const newQuantity = increment ? prev + 1 : prev - 1;
       return Math.max(1, newQuantity);
     });
@@ -136,25 +145,27 @@ const ProductPage = () => {
         data: {
           productId: productData._id,
           variationId: selectedVariation,
-          quantity: quantity
-        }
+          quantity: quantity,
+        },
       });
 
       if (response.status) {
-        dispatch(updateCart({
-          cart: response.data.cart,
-          total: response.data.total,
-          itemCount: response.data.itemCount
-        }));
+        dispatch(
+          updateCart({
+            cart: response.data.cart,
+            total: response.data.total,
+            itemCount: response.data.itemCount,
+          })
+        );
 
         if (buyNow) {
-          navigate('/cart');
+          navigate("/cart");
         } else {
           dispatch(
             addNotification({
               type: "success",
               title: "Success",
-              description: "Added to cart successfully!"
+              description: "Added to cart successfully!",
             })
           );
         }
@@ -167,7 +178,7 @@ const ProductPage = () => {
         addNotification({
           type: "error",
           title: "Error",
-          description: error.message || "Failed to add to cart"
+          description: error.message || "Failed to add to cart",
         })
       );
     } finally {
@@ -178,8 +189,8 @@ const ProductPage = () => {
 
   const handleAuthModalAction = (action) => {
     setShowAuthModal(false);
-    if (action === 'login') {
-      navigate('/login', { state: { from: location } });
+    if (action === "login") {
+      navigate("/login", { state: { from: location } });
     }
   };
 
@@ -200,9 +211,9 @@ const ProductPage = () => {
     );
   }
 
-  const selectedVariationData = productData.variations?.find(v => v._id === selectedVariation);
-
-
+  const selectedVariationData = productData.variations?.find(
+    (v) => v._id === selectedVariation
+  );
 
   return (
     <main className="lg:px-20 mt-10">
@@ -249,7 +260,10 @@ const ProductPage = () => {
             />
             {(productData?.activeSale || productData?.discountPercentage) && (
               <div className="absolute top-4 left-4 bg-[#db4444] text-white px-3 py-1 rounded">
-                -{productData?.activeSale?.discountPercentage || productData?.discountPercentage}% OFF
+                -
+                {productData?.activeSale?.discountPercentage ||
+                  productData?.discountPercentage}
+                % OFF
               </div>
             )}
           </div>
@@ -260,7 +274,7 @@ const ProductPage = () => {
               {productData.name}
             </h1>
             <div className="flex items-center gap-3 mt-2">
-              {(productData?.activeSale || productData?.discountPercentage) ? (
+              {productData?.activeSale || productData?.discountPercentage ? (
                 <>
                   <p className="text-[#db4444] text-2xl font-semibold">
                     {currency}
@@ -280,17 +294,16 @@ const ProductPage = () => {
             </div>
 
             <div className="mt-2 flex items-center gap-4">
-  {productData.variations?.some(v => v.quantity > 0) ? (
-    <span className="text-sm opacity-60 inline-flex items-center px-2 py-1 rounded-full bg-green-100 text-green-700">
-      In Stock
-    </span>
-  ) : (
-    <span className="text-sm opacity-60 inline-flex items-center px-2 py-1 rounded-full bg-red-100 text-red-700">
-      Out of Stock
-    </span>
-  )}
-</div>
-
+              {productData.variations?.some((v) => v.quantity > 0) ? (
+                <span className="text-sm opacity-60 inline-flex items-center px-2 py-1 rounded-full bg-green-100 text-green-700">
+                  In Stock
+                </span>
+              ) : (
+                <span className="text-sm opacity-60 inline-flex items-center px-2 py-1 rounded-full bg-red-100 text-red-700">
+                  Out of Stock
+                </span>
+              )}
+            </div>
 
             <p className="mt-4 text-sm text-black">{productData.description}</p>
 
@@ -301,10 +314,11 @@ const ProductPage = () => {
                 {productData.variations?.map((variation) => (
                   <button
                     onClick={() => handleVariationSelect(variation)}
-                    className={`px-3 py-1 flex justify-center items-center border rounded ${variation._id === selectedVariation
-                      ? "border-orange-500 bg-[#db4444] text-white"
-                      : ""
-                      }`}
+                    className={`px-3 py-1 flex justify-center items-center border rounded ${
+                      variation._id === selectedVariation
+                        ? "border-orange-500 bg-[#db4444] text-white"
+                        : ""
+                    }`}
                     key={variation._id}
                     disabled={variation.quantity === 0}
                   >
@@ -323,13 +337,13 @@ const ProductPage = () => {
                   className="w-10 h-11 px-2 py-2.5 rounded-tl rounded-bl border border-black/50 flex text-center justify-center items-center cursor-pointer"
                 >
                   <div className="text-black text-2xl font-medium font-[Poppins] leading-7">
-                    -
+                    <img src="/images/icon-minus.png" alt="" />
                   </div>
                 </div>
 
                 <div className="h-11 py-2 border-t border-b border-black/50 flex justify-center items-center">
                   <div className="text-black text-xl w-10 font-medium font-[Poppins] leading-7">
-                    {quantity}
+                    <p className="text-center"> {quantity}</p>
                   </div>
                 </div>
 
@@ -337,14 +351,18 @@ const ProductPage = () => {
                   onClick={() => handleQuantityChange(true)}
                   className="w-[41px] h-11 pl-[9px] pr-2 py-2.5 bg-[#db4444] rounded-tr rounded-br flex justify-center items-center cursor-pointer"
                 >
-                  <p className="text-2xl text-white">+</p>
+                  <img src="/images/icon-plus.png" alt="" />
                 </div>
               </div>
 
               <button
                 onClick={() => initiateAddToCart(true)}
                 className="bg-[#db4444] text-white px-6 py-2 rounded disabled:bg-gray-400 hover:bg-[#c03838] transition-colors"
-                disabled={!selectedVariation || isAddingToCart || selectedVariationData?.quantity === 0}
+                disabled={
+                  !selectedVariation ||
+                  isAddingToCart ||
+                  selectedVariationData?.quantity === 0
+                }
               >
                 Buy Now
               </button>
@@ -353,36 +371,47 @@ const ProductPage = () => {
                 <button
                   onClick={() => initiateAddToCart(false)}
                   className={`w-10 h-10 p-1 rounded border border-black/50 justify-center items-center inline-flex 
-      ${(!selectedVariation || isAddingToCart || selectedVariationData?.quantity === 0)
-                      ? 'opacity-50 cursor-not-allowed'
-                      : 'hover:bg-gray-100 cursor-pointer'}
-      ${isAddingToCart ? 'animate-bounce' : ''}
-      ${cartItem ? 'bg-red-50 border-[#db4444]' : ''}`}
-                  disabled={!selectedVariation || isAddingToCart || selectedVariationData?.quantity === 0}
+      ${
+        !selectedVariation ||
+        isAddingToCart ||
+        selectedVariationData?.quantity === 0
+          ? "opacity-50 cursor-not-allowed"
+          : "hover:bg-gray-100 cursor-pointer"
+      }
+      ${isAddingToCart ? "animate-bounce" : ""}
+      ${cartItem ? "bg-red-50 border-[#db4444]" : ""}`}
+                  disabled={
+                    !selectedVariation ||
+                    isAddingToCart ||
+                    selectedVariationData?.quantity === 0
+                  }
                 >
                   <img
                     src={assets.cart_icon}
                     alt="cart icon"
                     width={"20px"}
-                    className={`${isAddingToCart ? 'scale-110 transition-transform' : ''}`}
+                    className={`${
+                      isAddingToCart ? "scale-110 transition-transform" : ""
+                    }`}
                   />
                 </button>
 
-
                 <div className="absolute bottom-full mb-2 hidden group-hover:block">
                   <div className="bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
-                    {cartItem ? `Update Cart (${cartItem.quantity} in cart)` : 'Add to Cart'}
+                    {cartItem
+                      ? `Update Cart (${cartItem.quantity} in cart)`
+                      : "Add to Cart"}
                   </div>
                   <div className="border-8 border-transparent border-t-gray-800 w-0 h-0 mx-auto" />
                 </div>
               </div>
-
             </div>
 
             {/* Delivery Details */}
             <div className="mt-4 border p-4 rounded">
               <div className="mb-2">
-                <strong>Free Delivery</strong>: Enter your postal code for delivery availability.
+                <strong>Free Delivery</strong>: Enter your postal code for
+                delivery availability.
               </div>
               <div>
                 <strong>Return Delivery</strong>: Free 30 Days Delivery Returns.
@@ -396,7 +425,10 @@ const ProductPage = () => {
       <Reviews productId={productData._id} productName={productData.name} />
 
       {/* Related Products Section */}
-      <RelatedProduct category={productData.category} currentProductId={productData._id} />
+      <RelatedProduct
+        category={productData.category}
+        currentProductId={productData._id}
+      />
 
       {/* Authentication Modal */}
       {showAuthModal && (
@@ -411,20 +443,21 @@ const ProductPage = () => {
             </p>
             <div className="flex justify-end gap-3">
               <button
-                onClick={() => handleAuthModalAction('cancel')}
+                onClick={() => handleAuthModalAction("cancel")}
                 className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50"
               >
                 Cancel
               </button>
               <button
-                onClick={() => handleAuthModalAction('login')}
+                onClick={() => handleAuthModalAction("login")}
                 className="px-4 py-2 bg-[#db4444] text-white rounded hover:bg-[#c03838]"
               >
                 Login
               </button>
             </div>
           </div>
-        </Modal>)}
+        </Modal>
+      )}
     </main>
   );
 };

@@ -21,27 +21,29 @@ const RelatedProduct = ({ category, currentProductId }) => {
             category: category._id,
             limit: 5, // Get 5 products
             page: 1,
-            status: 'published'
-          }
+            status: "published",
+          },
         });
 
         if (response.status) {
           // Filter out current product and take first 4
           const filteredProducts = response.data.products
-            .filter(product => product._id !== currentProductId)
+            .filter((product) => product._id !== currentProductId)
             .slice(0, 4);
 
           setRelatedProducts(filteredProducts);
         } else {
-          throw new Error(response.message || 'Failed to fetch related products');
+          throw new Error(
+            response.message || "Failed to fetch related products"
+          );
         }
       } catch (error) {
-        console.error('Error fetching related products:', error);
+        console.error("Error fetching related products:", error);
         dispatch(
           addNotification({
             type: "error",
             title: "Error",
-            description: "Failed to load related products"
+            description: "Failed to load related products",
           })
         );
       } finally {
@@ -55,7 +57,7 @@ const RelatedProduct = ({ category, currentProductId }) => {
   if (!category?._id) return null;
 
   return (
-    <section className="container mx-auto px-4 lg:px-10">
+    <section className="container mx-auto px-4  mb-10 lg:px-10">
       <h2 className="text-[#db4444] text-base font-semibold mb-4">
         Related Items
       </h2>
@@ -82,8 +84,10 @@ const RelatedProduct = ({ category, currentProductId }) => {
               name={item.name}
               slug={item.slug}
               price={item.variations[0]?.price}
-              discount={item?.activeSale?.discountPercentage && 
-                item.activeSale.discountPercentage + "%"}
+              discount={
+                item?.activeSale?.discountPercentage &&
+                item.activeSale.discountPercentage + "%"
+              }
             />
           ))}
         </div>

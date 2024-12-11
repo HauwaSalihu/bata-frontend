@@ -3,6 +3,14 @@ import LastHome from "../components/LastHome";
 function About() {
   return (
     <div>
+      {/* <!-- hyperlink section --> */}
+      <section className="container mx-auto px-10">
+        <ul className="flex gap-3">
+          <li className="text-slate-400">Home</li>
+          <li>/</li>
+          <li className="font-medium">About</li>
+        </ul>
+      </section>
       <section className="bg-gray-100 px-6 py-10 md:p-20">
         <div className="grid grid-flow-row lg:grid-cols-3 gap-10">
           {/* Our Story */}

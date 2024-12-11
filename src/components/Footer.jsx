@@ -10,16 +10,15 @@ function Footer() {
           <h3 className="font-bold text-xl tracking-wide">BATA NIGERIA</h3>
           <p className="font-medium">Subscribe</p>
           <p>Get 10% off your first order</p>
-          <div className="flex items-center rounded-lg overflow-hidden">
+          <div className="flex items-center rounded-lg bg-red-400 overflow-hidden">
             <input
               type="email"
               placeholder="Enter your email"
               className="w-full p-3 bg-red-400 text-white placeholder-white/70 focus:outline-none"
             />
-            <button className="p-3 bg-red-700 hover:bg-red-800 text-white font-bold transition-all">
-              <i className="far fa-paper-plane"></i>
-              Submit
-            </button>
+            <div className=" h-full flex items-center pr-3">
+              <img src="/images/icon-send.png" alt="" />
+            </div>
           </div>
         </div>
 
@@ -92,21 +91,33 @@ function Footer() {
 
         {/* Social Media Icons */}
         <div className="flex gap-5 mt-5 sm:mt-0">
-          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://facebook.com"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <img
               src={assets.facebook}
               className="h-6 hover:opacity-80"
               alt="Facebook"
             />
           </a>
-          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://instagram.com"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <img
               src={assets.instagram}
               className="h-6 hover:opacity-80"
               alt="Instagram"
             />
           </a>
-          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://linkedin.com"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <img
               src={assets.linkedin}
               className="h-6 hover:opacity-80"
@@ -118,6 +129,5 @@ function Footer() {
     </div>
   );
 }
-
 
 export default Footer;

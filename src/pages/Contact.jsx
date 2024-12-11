@@ -17,7 +17,7 @@ function Contact() {
           <div className="shadow-md p-5 w-96">
             <div className="border-b py-10">
               <span className="flex items-center gap-3 font-bold">
-                <i className="fas fa-phone p-3 border text-white rounded-full bg-red-500"></i>
+                <img src="images/icons-phone.png" alt="" />
                 To Call Us
               </span>
               <p className="mt-5">We are available 24/7, 7 days a week.</p>
@@ -26,7 +26,7 @@ function Contact() {
 
             <div className="py-10">
               <span className="flex items-center gap-3 font-bold">
-                <i className="fas fa-envelope p-3 border text-white rounded-full bg-red-500"></i>
+                <img src="images/icons-mail.png" alt="" />
                 Write to Us
               </span>
               <p className="mt-5">
