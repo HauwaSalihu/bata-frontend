@@ -37,7 +37,7 @@ const makeRequest = async (config, method, endpoint, data, queryParams) => {
       if (status) {
           return response.data;
       } else {
-          if (config_data.show_error_status) {
+          if (config_data.show_error) {
               store.dispatch(
                   addNotification({
                       type: "error",
@@ -49,7 +49,7 @@ const makeRequest = async (config, method, endpoint, data, queryParams) => {
           return response.data;
       }
   } catch (error) {
-      if (config_data.show_error_status) {
+      if (config_data.show_error) {
           store.dispatch(
               addNotification({
                   type: "error",

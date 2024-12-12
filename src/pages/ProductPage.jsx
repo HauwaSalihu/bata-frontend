@@ -1,7 +1,6 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { ShopContext } from "../context/ShopContext";
 import { assets } from "../assets/assets";
 import RelatedProduct from "../components/RelatedProduct";
 import { getProductBySlug } from "../utils/api/product";
@@ -19,7 +18,7 @@ const ProductPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
-  const { currency } = useContext(ShopContext);
+  const currency = "₦";
 
   const [productData, setProductData] = useState(null);
   const [image, setImage] = useState("");
@@ -104,15 +103,15 @@ const ProductPage = () => {
   const handleVariationSelect = (variation) => {
     setSelectedVariation(variation._id);
     setSelectedPrice(variation.price);
-    if (productData?.activeSale || productData.setDiscountedPrice) {
-      const discountedPrice =
-        variation.price *
-        (1 -
-          (productData?.activeSale?.discountPercentage ||
-            productData.discountPercentage) /
-            100);
+    
+    // Calculate discounted price if there's an active sale or discount
+    if (productData?.activeSale || productData?.discountPercentage) {
+      const discountPercentage = productData?.activeSale?.discountPercentage || 
+                                 productData?.discountPercentage;
+      const discountedPrice = variation.price * (1 - discountPercentage / 100);
       setDiscountedPrice(discountedPrice);
     }
+    
     // Reset quantity when variation changes
     setQuantity(1);
   };
@@ -276,19 +275,25 @@ const ProductPage = () => {
             <div className="flex items-center gap-3 mt-2">
               {productData?.activeSale || productData?.discountPercentage ? (
                 <>
-                  <p className="text-[#db4444] text-2xl font-semibold">
+                   <p className="text-[#db4444] text-2xl font-semibold">
                     {currency}
-                    {discountedPrice.toFixed(2)}
+                    {new Intl.NumberFormat().format(
+                      discountedPrice.toFixed(2)
+                    )}
                   </p>
                   <p className="text-gray-400 text-xl line-through">
                     {currency}
-                    {selectedPrice.toFixed(2)}
+                    {new Intl.NumberFormat().format(
+                      selectedPrice.toFixed(2)
+                    )}
                   </p>
                 </>
               ) : (
                 <p className="text-black text-2xl font-normal leading-normal tracking-wide">
                   {currency}
-                  {selectedPrice.toFixed(2)}
+                  {new Intl.NumberFormat().format(
+                      selectedPrice.toFixed(2)
+                    )}
                 </p>
               )}
             </div>

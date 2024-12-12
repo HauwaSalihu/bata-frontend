@@ -106,14 +106,13 @@ const OrdersPage = () => {
       </section>
 
       {/* Main Content */}
-      <section className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <section className="flex flex-wrap lg:flex-nowrap justify-between gap-8">
         {/* Sidebar */}
-        <div className="hidden lg:block col-span-1">
           <AccountSidebar />
-        </div>
+
 
         {/* Orders Content */}
-        <div className="col-span-1 lg:col-span-3 space-y-6">
+        <div className="w-full lg:w-3/4">
           {/* Mobile Sidebar Toggle */}
           <div className="lg:hidden mb-4">
             <AccountSidebar />

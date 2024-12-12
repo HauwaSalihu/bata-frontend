@@ -36,7 +36,7 @@ const AdminUsers = () => {
   const fetchStats = async () => {
     try {
       setStatsLoading(true);
-      const response = await getUserStats();
+      const response = await getUserStats({});
       if (response.status) {
         setStats(response.data);
       }
@@ -125,7 +125,7 @@ const AdminUsers = () => {
 
     try {
       const response = await updateUser({ userId, data: updates });
-
+// console.log(response)
       if (response.status) {
         dispatch(addNotification({
           type: "success",
@@ -136,6 +136,12 @@ const AdminUsers = () => {
         fetchStats();
         setShowModal(false);
         setEditingUser(null);
+      }else{
+        dispatch(addNotification({
+          type: "error",
+          title: "Success",
+          description: response.message||"Error updating user"
+        }));
       }
     } catch (error) {
       dispatch(addNotification({
@@ -380,7 +386,6 @@ const AdminUsers = () => {
                     }))}
                     className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-red-200"
                   >
-                    <option value="customer">Customer</option>
                     <option value="staff">Staff</option>
                     <option value="admin">Admin</option>
                   </select>

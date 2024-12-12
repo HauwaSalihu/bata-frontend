@@ -24,7 +24,7 @@ const Dashboard = () => {
     try {
       setLoading(true);
       const [userStats, orderStats, saleStats, productStats] = await Promise.all([
-        getUserStats(),
+        getUserStats({}),
         getOrderStats({}),
         getSaleStats({}),
         getProductStats({})
@@ -51,6 +51,18 @@ const Dashboard = () => {
     return <div className="p-8 text-center">Loading...</div>;
   }
 
+  // Transform order stats to match existing component structure
+  const orderStatsTransformed = stats.orders ? {
+    todayRevenue: stats.orders.dailyRevenue?.[stats.orders.dailyRevenue.length - 1]?.revenue || 0,
+    todayOrders: stats.orders.dailyRevenue?.[stats.orders.dailyRevenue.length - 1]?.orders || 0,
+    totalOrders: stats.orders.summary?.totalOrders || 0,
+    totalRevenue: stats.orders.summary?.totalRevenue || 0,
+    avgOrderValue: stats.orders.summary?.avgOrderValue || 0,
+    pendingOrders: stats.orders.orderStatus?.pending || 0,
+    processingOrders: stats.orders.orderStatus?.processing || 0,
+    completedOrders: stats.orders.orderStatus?.delivered || 0
+  } : null;
+
   return (
     <div className="p-8">
       <h1 className="text-2xl font-medium mb-8">Dashboard</h1>
@@ -60,10 +72,10 @@ const Dashboard = () => {
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <h3 className="text-sm font-medium text-gray-500">Today's Revenue</h3>
           <p className="text-2xl font-semibold mt-2">
-            ₦{stats.orders?.todayRevenue?.toLocaleString() || 0}
+            ₦{orderStatsTransformed?.todayRevenue?.toLocaleString() || 0}
           </p>
           <div className="mt-2 text-sm text-gray-500">
-            {stats.orders?.todayOrders || 0} orders today
+            {orderStatsTransformed?.todayOrders || 0} orders today
           </div>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-sm border">
@@ -249,38 +261,38 @@ const Dashboard = () => {
               <div>
                 <div className="text-sm text-gray-500">Total Orders</div>
                 <div className="text-lg font-medium">
-                  {stats.orders?.totalOrders || 0}
+                  {orderStatsTransformed?.totalOrders || 0}
                 </div>
               </div>
               <div>
                 <div className="text-sm text-gray-500">Total Revenue</div>
                 <div className="text-lg font-medium">
-                  ₦{stats.orders?.totalRevenue?.toLocaleString() || 0}
+                  ₦{orderStatsTransformed?.totalRevenue?.toLocaleString() || 0}
                 </div>
               </div>
               <div>
                 <div className="text-sm text-gray-500">Average Order Value</div>
                 <div className="text-lg font-medium">
-                  ₦{stats.orders?.avgOrderValue?.toLocaleString() || 0}
+                  ₦{orderStatsTransformed?.avgOrderValue?.toLocaleString() || 0}
                 </div>
               </div>
               <div>
                 <div className="text-sm text-gray-500">Pending Orders</div>
                 <div className="text-lg font-medium">
-                  {stats.orders?.pendingOrders || 0}
+                  {orderStatsTransformed?.pendingOrders || 0}
                 </div>
               </div>
             </div>
             <div className="pt-4 border-t">
               <div className="flex gap-2 flex-wrap">
                 <div className="px-3 py-1 text-sm rounded-full bg-yellow-100 text-yellow-800">
-                  {stats.orders?.pendingOrders || 0} Pending
+                  {orderStatsTransformed?.pendingOrders || 0} Pending
                 </div>
                 <div className="px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800">
-                  {stats.orders?.processingOrders || 0} Processing
+                  {orderStatsTransformed?.processingOrders || 0} Processing
                 </div>
                 <div className="px-3 py-1 text-sm rounded-full bg-green-100 text-green-800">
-                  {stats.orders?.completedOrders || 0} Completed
+                  {orderStatsTransformed?.completedOrders || 0} Completed
                 </div>
               </div>
             </div>

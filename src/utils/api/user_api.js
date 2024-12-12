@@ -11,9 +11,9 @@ export const updateProfile = async ({config,data}) => makeRequest(config,'patch'
 export const changePassword = async ({config,data}) => makeRequest(config,'patch', BASE_URL+'change-password', data);
 
 
-export const getAllUsers = async ({params}) => makeRequest({},'get', BASE_URL + "admin/users", {}, params);
-export const getUserStats = async () => makeRequest({},'get', BASE_URL + "admin/users/stats");
-export const searchUsers = async ({params}) => makeRequest({},'get', BASE_URL + "admin/search", {}, params);
-export const updateUser = async ({userId, data}) => makeRequest({},'patch', BASE_URL + `admin/users/${userId}`, data);
+export const getAllUsers = async ({config,params}) => makeRequest(config,'get', BASE_URL + "admin/users", {}, params);
+export const getUserStats = async ({config}) => makeRequest(config,'get', BASE_URL + "admin/users/stats");
+export const searchUsers = async ({config,params}) => makeRequest(config,'get', BASE_URL + "admin/search", {}, params);
+export const updateUser = async ({config, userId, data}) => makeRequest(config,'patch', BASE_URL + `admin/users/${userId}`, data);
 
 export const me = async ({config}) => makeRequest(config,'get', BASE_URL+'me', {});
