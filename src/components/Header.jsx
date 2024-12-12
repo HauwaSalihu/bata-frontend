@@ -205,6 +205,14 @@ const Header = () => {
                 Contact
               </Link>
             </li>
+            <li>
+              <Link
+                to="/collection"
+                className="text-gray-600 hover:text-[#db4444]"
+              >
+                Collection
+              </Link>
+            </li>
             {!isAuthenticated && (
               <>
                 <li>
