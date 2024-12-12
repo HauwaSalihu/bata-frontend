@@ -11,15 +11,9 @@ export const updateProfile = async ({config,data}) => makeRequest(config,'patch'
 export const changePassword = async ({config,data}) => makeRequest(config,'patch', BASE_URL+'change-password', data);
 
 
-
-// export const sendOTP = async ({config,data}) => makeRequest(config,'post', BASE_URL+'send_otp', data);
-// export const verifyIdentifier = async ({config,data}) => makeRequest(config,'post', BASE_URL+'verify_identifier', data);
-// export const verifyOTP = async ({config,data}) => makeRequest(config,'post', BASE_URL+'verify_otp', data);
-
+export const getAllUsers = async ({config,params}) => makeRequest(config,'get', BASE_URL + "admin/users", {}, params);
+export const getUserStats = async ({config}) => makeRequest(config,'get', BASE_URL + "admin/users/stats");
+export const searchUsers = async ({config,params}) => makeRequest(config,'get', BASE_URL + "admin/search", {}, params);
+export const updateUser = async ({config, userId, data}) => makeRequest(config,'patch', BASE_URL + `admin/users/${userId}`, data);
 
 export const me = async ({config}) => makeRequest(config,'get', BASE_URL+'me', {});
-// export const chartUsers = async ({config,query}) => makeRequest(config,'get', BASE_URL+'chart_users', {}, query);
-// export const getUser = async ({config,query}) => makeRequest(config,'get', BASE_URL+'get_user', {}, query);
-// export const getUserWallet = async ({config,identifier}) => makeRequest(config,'get', BASE_URL+`get_user_wallet/${identifier}`);
-// export const getUsers = async ({config,query}) => makeRequest(config,'get', BASE_URL+'get_users', {}, query);
-// // Add more functions for other device endpoints

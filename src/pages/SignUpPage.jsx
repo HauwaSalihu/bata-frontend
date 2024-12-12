@@ -12,9 +12,9 @@ const SignUpPage = () => {
     password: "",
     confirm_password: "",
   });
-  // const [isLoading, setIsLoading] = useState(false);
+  const [signupSuccess, setSignupSuccess] = useState(false);
   const dispatch = useDispatch();
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,37 +26,96 @@ const SignUpPage = () => {
     const { confirm_password, password } = credentials;
 
     // Basic validation
-    if (confirm_password != password) {
+    if (confirm_password !== password) {
       dispatch(
         addNotification({
           type: "error",
           title: "Validation Error",
-          description: "Password and Confirm Password does not match.",
+          description: "Password and Confirm Password do not match.",
         })
       );
       return;
     }
-    // config:{show_loader:false, show_error:true}
-    // setIsLoading(true);
-    const { status, message, data } = await register({
-      data: { ...credentials, confirm_password: undefined },
-    });
-    console.log(status, message, data);
-    if (status) {
-      // dispatch(setUserAuth({ user: data.user, token:data.token }));
-      // navigate("/");
-    } else {
+
+    try {
+      const { status, message, data } = await register({
+        data: { ...credentials, confirm_password: undefined },
+      });
+    
+      if (status) {
+        setSignupSuccess(true);
+        dispatch(
+          addNotification({
+            type: "success",
+            title: "Account Created",
+            description: "Please check your email to verify your account.",
+          })
+        );
+      } else {
+        dispatch(
+          addNotification({
+            type: "error",
+            title: "Operation Failed!",
+            description: message,
+          })
+        );
+      }
+    } catch (error) {
       dispatch(
         addNotification({
           type: "error",
-          title: "Operation Failed!",
-          description: message,
+          title: "Error",
+          description: "An unexpected error occurred. Please try again.",
         })
       );
     }
-    // setIsLoading(false);
   };
 
+  // If signup is successful, show verification message
+  if (signupSuccess) {
+    return (
+      <main className="flex items-center justify-center min-h-screen bg-gray-100 px-4">
+        <div className="flex flex-col max-w-md w-full bg-white p-8 shadow-lg rounded-lg text-center">
+          <div className="mb-6">
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className="h-20 w-20 mx-auto text-green-500 mb-4" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" 
+              />
+            </svg>
+            <h2 className="text-2xl font-medium text-gray-800 mb-4">
+              Account Created Successfully!
+            </h2>
+            <p className="text-gray-600 mb-6">
+              We've sent a verification email to <span className="font-medium">{credentials.email}</span>. 
+              Please check your inbox and click the verification link to activate your account.
+            </p>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-500">
+                Didn't receive the email? Check your spam folder 
+              </p>
+              <button 
+                onClick={() => navigate('/login')}
+                className="w-full py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition"
+              >
+                Go to Login
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Original signup form
   return (
     <main className="flex items-center justify-center min-h-screen bg-gray-100 px-4">
       <div className="flex flex-col max-w-md w-full bg-white p-8 shadow-lg rounded-lg">
@@ -79,6 +138,7 @@ const SignUpPage = () => {
               value={credentials.name}
               onChange={handleChange}
               className="w-full px-4 py-2 border-b border-gray-400 text-gray-700 text-base focus:outline-none focus:border-red-500"
+              required
             />
           </div>
 
@@ -91,6 +151,7 @@ const SignUpPage = () => {
               value={credentials.email}
               onChange={handleChange}
               className="w-full px-4 py-2 border-b border-gray-400 text-gray-700 text-base focus:outline-none focus:border-red-500"
+              required
             />
           </div>
 
@@ -103,6 +164,7 @@ const SignUpPage = () => {
               onChange={handleChange}
               placeholder="Phone Number"
               className="w-full px-4 py-2 border-b border-gray-400 text-gray-700 text-base focus:outline-none focus:border-red-500"
+              required
             />
           </div>
 
@@ -115,6 +177,8 @@ const SignUpPage = () => {
               value={credentials.password}
               onChange={handleChange}
               className="w-full px-4 py-2 border-b border-gray-400 text-gray-700 text-base focus:outline-none focus:border-red-500"
+              required
+              minLength={6}
             />
           </div>
 
@@ -127,23 +191,20 @@ const SignUpPage = () => {
               onChange={handleChange}
               placeholder="Confirm Password"
               className="w-full px-4 py-2 border-b border-gray-400 text-gray-700 text-base focus:outline-none focus:border-red-500"
+              required
+              minLength={6}
             />
           </div>
 
           {/* Create Account Button */}
           <div>
-            <button className="w-full py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition">
+            <button 
+              type="submit" 
+              className="w-full py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition"
+            >
               Create Account
             </button>
           </div>
-
-          {/* Sign up with Google */}
-          {/* <div className="border border-gray-400 rounded-lg flex justify-center items-center py-3 hover:shadow-md transition">
-            <i className="fab fa-google text-red-500 mr-2"></i>
-            <button className="text-black font-medium">
-              Sign up with Google
-            </button>
-          </div> */}
         </form>
 
         {/* Already have an account */}
@@ -151,7 +212,7 @@ const SignUpPage = () => {
           <p className="text-gray-600 text-sm">
             Already have an account?{" "}
             <a
-              href="login.html"
+              href="/login"
               className="text-red-600 font-medium hover:underline"
             >
               Log in

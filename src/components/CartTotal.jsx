@@ -4,11 +4,22 @@ import { selectCartItems, selectCartTotal } from "../utils/slicers/cartSlice";
 function CartTotal() {
   const cartItems = useSelector(selectCartItems);
   const cartTotal = useSelector(selectCartTotal);
-  const DELIVERY_FEE = 10; // You might want to move this to a constants file
-  const currency = "NGN "; // You might want to get this from a global config
+  const DELIVERY_FEE = 0; // You might want to move this to a constants file
+  const currency = "₦"; // You might want to get this from a global config
 
-  // Calculate subtotal
+  // Calculate subtotal with discount consideration
   const subtotal = cartItems.reduce((total, item) => {
+    const variation = item.product.variations.find(v => v._id === item.variation);
+    const discountPercentage = item.sale?.discountPercentage || 
+                                item.discountPercentage || 0;
+    const originalPrice = variation?.price || 0;
+    const discountedPrice = originalPrice * (1 - discountPercentage / 100);
+    
+    return total + discountedPrice * item.quantity;
+  }, 0);
+
+  // Calculate original subtotal (before discount)
+  const originalSubtotal = cartItems.reduce((total, item) => {
     const variation = item.product.variations.find(v => v._id === item.variation);
     return total + (variation?.price || 0) * item.quantity;
   }, 0);
@@ -28,9 +39,16 @@ function CartTotal() {
           <h5 className="text-gray-600">
             Subtotal:
           </h5>
-          <p className="font-medium">
-            {currency}{subtotal.toFixed(2)}
-          </p>
+          <div className="flex items-center gap-2">
+            {originalSubtotal !== subtotal && (
+              <p className="text-gray-400 line-through">
+                {currency}{originalSubtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+            )}
+            <p className="font-medium text-[#db4444]">
+              {currency}{subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </p>
+          </div>
         </div>
 
         {/* Shipping Row */}
@@ -39,7 +57,7 @@ function CartTotal() {
             Shipping:
           </h5>
           <p className="font-medium">
-            {subtotal > 0 ? `${currency}${DELIVERY_FEE.toFixed(2)}` : 'N/A'}
+            {subtotal > 0 ? `${currency}${DELIVERY_FEE.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A'}
           </p>
         </div>
 
@@ -49,28 +67,23 @@ function CartTotal() {
             Total:
           </h5>
           <p className="text-lg font-bold text-[#db4444]">
-            {currency}{total.toFixed(2)}
+            {currency}{total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
         </div>
+
+        {/* Savings Row */}
+        {originalSubtotal !== subtotal && (
+          <div className="flex justify-between items-center text-sm text-green-600 mt-2">
+            <span>Total Savings:</span>
+            <span>
+              {currency}{(originalSubtotal - subtotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
+        )}
 
         {/* Additional Info */}
         {subtotal > 0 && (
           <div className="mt-4 pt-4 border-t text-sm text-gray-500">
-            {/* <p className="flex items-center gap-2">
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                className="h-5 w-5 text-green-500" 
-                viewBox="0 0 20 20" 
-                fill="currentColor"
-              >
-                <path 
-                  fillRule="evenodd" 
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" 
-                  clipRule="evenodd" 
-                />
-              </svg>
-              Free shipping for orders over ${100}
-            </p> */}
             <p className="mt-2 flex items-center gap-2">
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
@@ -89,15 +102,6 @@ function CartTotal() {
             </p>
           </div>
         )}
-
-        {/* Proceed to Checkout Button */}
-        {/* <button
-          className="w-full py-3 mt-4 bg-[#db4444] text-white rounded-lg hover:bg-[#c03838] 
-            transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
-          disabled={subtotal === 0}
-        >
-          Proceed to Checkout
-        </button> */}
       </div>
     </div>
   );

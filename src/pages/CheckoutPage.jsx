@@ -9,9 +9,17 @@ import { addNotification } from "../utils/slicers/notificationSlice";
 const CheckoutPage = () => {
   const [method, setMethod] = useState("paystack");
   const [isProcessing, setIsProcessing] = useState(false);
-  const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
+
+  // List of countries (you can expand this)
+  const countries = [
+    "Nigeria", 
+    // "United States", 
+    // "United Kingdom", 
+    // "Canada", 
+    // "Australia"
+  ];
 
   // State for form fields
   const [formData, setFormData] = useState({
@@ -54,7 +62,7 @@ const CheckoutPage = () => {
       setIsProcessing(true);
 
       // Validate required fields
-      const requiredFields = ['address', 'city', 'state'];
+      const requiredFields = ['address', 'city', 'state', 'country'];
       const missingFields = requiredFields.filter(field => !formData[field]);
       
       if (missingFields.length > 0) {
@@ -100,7 +108,7 @@ const CheckoutPage = () => {
   };
 
   return (
-    <main className="lg:px-20 mt-20">
+    <main className="lg:px-20 mt-10">
       {/* Hyperlink Section */}
       <section className="container mx-auto px-10 mb-10">
         <ul className="flex gap-3 text-sm">
@@ -238,6 +246,51 @@ const CheckoutPage = () => {
                 value={formData.state}
                 onChange={handleChange}
                 placeholder="Enter your state"
+              />
+            </div>
+
+            {/* Country */}
+            <div className="flex-col justify-start items-start gap-2 flex">
+              <div className="opacity-40">
+                <span className="text-black text-base font-normal font-['Poppins'] leading-normal">
+                  Country
+                </span>
+                <span className="text-[#db4444] text-base font-normal font-['Poppins'] leading-normal">
+                  *
+                </span>
+              </div>
+              <select
+                name="country"
+                className="w-full lg:w-[470px] h-[50px] relative bg-white border rounded px-4"
+                value={formData.country}
+                onChange={handleChange}
+              >
+                <option value="">Select Country</option>
+                {countries.map((country) => (
+                  <option key={country} value={country}>
+                    {country}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Zip Code */}
+            <div className="flex-col justify-start items-start gap-2 flex">
+              <div className="opacity-40">
+                <span className="text-black text-base font-normal font-['Poppins'] leading-normal">
+                  Postal Code
+                </span>
+                <span className="text-[#db4444] text-base font-normal font-['Poppins'] leading-normal">
+                  *
+                </span>
+              </div>
+              <input
+                type="text"
+                name="zipCode"
+                className="w-full lg:w-[470px] h-[50px] relative bg-white border rounded px-4"
+                value={formData.zipCode}
+                onChange={handleChange}
+                placeholder="Enter your postal code"
               />
             </div>
           </div>

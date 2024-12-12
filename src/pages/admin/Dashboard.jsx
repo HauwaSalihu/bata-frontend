@@ -1,161 +1,306 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { getUserStats } from "../../utils/api/user_api";
+import { getOrderStats } from "../../utils/api/order";
+import { getSaleStats } from "../../utils/api/sale";
+import { getProductStats } from "../../utils/api/product";
+import { addNotification } from "../../utils/slicers/notificationSlice";
 
 const Dashboard = () => {
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    users: null,
+    orders: null,
+    sales: null,
+    products: null
+  });
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      setLoading(true);
+      const [userStats, orderStats, saleStats, productStats] = await Promise.all([
+        getUserStats({}),
+        getOrderStats({}),
+        getSaleStats({}),
+        getProductStats({})
+      ]);
+
+      setStats({
+        users: userStats.status ? userStats.data : null,
+        orders: orderStats.status ? orderStats.data : null,
+        sales: saleStats.status ? saleStats.data : null,
+        products: productStats.status ? productStats.data : null
+      });
+    } catch (error) {
+      dispatch(addNotification({
+        type: "error",
+        title: "Error",
+        description: "Failed to fetch dashboard statistics"
+      }));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="p-8 text-center">Loading...</div>;
+  }
+
+  // Transform order stats to match existing component structure
+  const orderStatsTransformed = stats.orders ? {
+    todayRevenue: stats.orders.dailyRevenue?.[stats.orders.dailyRevenue.length - 1]?.revenue || 0,
+    todayOrders: stats.orders.dailyRevenue?.[stats.orders.dailyRevenue.length - 1]?.orders || 0,
+    totalOrders: stats.orders.summary?.totalOrders || 0,
+    totalRevenue: stats.orders.summary?.totalRevenue || 0,
+    avgOrderValue: stats.orders.summary?.avgOrderValue || 0,
+    pendingOrders: stats.orders.orderStatus?.pending || 0,
+    processingOrders: stats.orders.orderStatus?.processing || 0,
+    completedOrders: stats.orders.orderStatus?.delivered || 0
+  } : null;
+
   return (
-    <main className="lg:px-20 px-4 mt-20">
-      {/* Header */}
-      <div className="w-full lg:w-[30%]">
-        <h1 className="text-black text-xl lg:text-[31.04px] font-black font-['Cairo']">
-          Dashboard
-        </h1>
-        <p className="text-gray-600 text-sm lg:text-base font-medium font-['Cairo']">
-          Hello Bata Stores, welcome back!
-        </p>
-      </div>
+    <div className="p-8">
+      <h1 className="text-2xl font-medium mb-8">Dashboard</h1>
 
-      {/* Main Content Wrapper */}
-      <div className="flex flex-col lg:flex-row bg-white gap-4 lg:gap-6">
-        {/* Sidebar */}
-        <div className="bg-gray-100 w-full lg:w-1/4 h-auto lg:h-auto">
-          <div className="flex flex-col gap-4 p-4">
-            {/* Sidebar Items */}
-            <div className="bg-gray-200 p-2 rounded-lg flex items-center gap-2">
-              <div className="w-2 h-2 bg-black rounded-full"></div>
-              <span className="text-black font-medium">Dashboard</span>
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                <span className="text-gray-500">Transactions</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                <span className="text-gray-500">Orders</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                <span className="text-gray-500">Products</span>
-              </div>
-            </div>
+      {/* Quick Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 className="text-sm font-medium text-gray-500">Today's Revenue</h3>
+          <p className="text-2xl font-semibold mt-2">
+            ₦{orderStatsTransformed?.todayRevenue?.toLocaleString() || 0}
+          </p>
+          <div className="mt-2 text-sm text-gray-500">
+            {orderStatsTransformed?.todayOrders || 0} orders today
           </div>
         </div>
-
-        {/* Dashboard Overview */}
-        <div className="w-full lg:w-3/4 bg-red-500 text-white rounded-md p-4">
-          <h2 className="text-lg font-bold mb-4">Overview</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Card */}
-            <div className="bg-white/10 p-4 rounded-md">
-              <p className="text-sm">Total Registered Users</p>
-              <p className="text-2xl font-bold">12</p>
-            </div>
-            {/* Card */}
-            <div className="bg-white/10 p-4 rounded-md">
-              <p className="text-sm">Total Orders Completed</p>
-              <p className="text-2xl font-bold">375</p>
-            </div>
-            {/* Card */}
-            <div className="bg-white/10 p-4 rounded-md">
-              <p className="text-sm">Total Pending Orders</p>
-              <p className="text-2xl font-bold">12</p>
-            </div>
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 className="text-sm font-medium text-gray-500">Active Products</h3>
+          <p className="text-2xl font-semibold mt-2">
+            {stats.products?.publishedProducts || 0}
+          </p>
+          <div className="mt-2 text-sm text-gray-500">
+            {stats.products?.lowStockProducts || 0} low stock items
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 className="text-sm font-medium text-gray-500">Active Sales</h3>
+          <p className="text-2xl font-semibold mt-2">
+            {stats.sales?.activeSales || 0}
+          </p>
+          <div className="mt-2 text-sm text-gray-500">
+            Avg {stats.sales?.averageDiscount?.toFixed(1) || 0}% discount
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 className="text-sm font-medium text-gray-500">Total Users</h3>
+          <p className="text-2xl font-semibold mt-2">
+            {stats.users?.totalUsers || 0}
+          </p>
+          <div className="mt-2 text-sm text-gray-500">
+            {stats.users?.newUsersLast30Days || 0} new in 30 days
           </div>
         </div>
       </div>
 
-      {/* Recent Orders Section */}
-      <div className="flex flex-col gap-5">
-        <h1 className="text-black text-[31.04px] font-bold font-['Cairo']">
-          Recent Orders
-        </h1>
-
-        {/* Filters */}
-        <div className="h-10 justify-start items-start gap-4 inline-flex">
-          <div className="px-3.5 py-2 bg-[#f5f6f7] rounded border border-[#e4e6eb] justify-start items-center flex">
-            <div className="justify-center items-center gap-3 flex">
-              <div className="w-4 h-4 relative"></div>
-              <div className="w-[107px] text-[#757886] text-[15px] font-normal font-['Commissioner'] leading-normal">
-                Select Filter
+      {/* Detailed Stats Sections */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* Product Stats */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-medium mb-4">Product Overview</h3>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-sm text-gray-500">Published</div>
+                <div className="text-lg font-medium">
+                  {stats.products?.publishedProducts || 0}
+                </div>
               </div>
-              <div className="w-4 h-4 relative"></div>
+              <div>
+                <div className="text-sm text-gray-500">Draft</div>
+                <div className="text-lg font-medium">
+                  {stats.products?.draftProducts || 0}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">Total Variations</div>
+                <div className="text-lg font-medium">
+                  {stats.products?.totalVariations || 0}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">Average Price</div>
+                <div className="text-lg font-medium">
+                  ₦{stats.products?.averagePrice?.toLocaleString() || 0}
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="px-3.5 py-2 bg-[#f5f6f7] rounded border border-[#e4e6eb] justify-start items-center flex">
-            <div className="justify-center items-center gap-3 flex">
-              <div className="w-5 h-5 relative">
-                <div className="w-[15px] h-[16.67px] left-[2.50px] top-[1.67px] absolute"></div>
+            <div className="pt-4 border-t">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm text-gray-500">Stock Status</span>
+                <span className="text-sm font-medium">
+                  {stats.products?.lowStockPercentage}% Low Stock
+                </span>
               </div>
-              <div className="w-20 text-[#4b4543] text-[15px] font-normal font-['Commissioner'] leading-normal">
-                All Time
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-yellow-500 h-2 rounded-full"
+                  style={{ width: `${stats.products?.lowStockPercentage || 0}%` }}
+                />
               </div>
-              <div className="w-4 h-4 relative"></div>
             </div>
           </div>
         </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse font-['Cairo']">
-            <thead className="bg-gray-100 text-left">
-              <tr className="border-b-2">
-                <th className="py-2 text-gray-500">Order ID</th>
-                <th className="py-2 text-gray-700">Date</th>
-                <th className="py-2 text-gray-700">Description</th>
-                <th className="py-2 text-gray-700">Payment Status</th>
-                <th className="py-2 text-gray-700">Delivery Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-b-2">
-                <td className="py-2 text-gray-500">#A580</td>
-                <td className="py-2 text-gray-700">Aug 15, 2021</td>
-                <td className="py-2 text-gray-700">
-                  Ship Container A7 10.4 Rusty (SM-T500 NZSAXAR)
-                </td>
-                <td className="py-2 text-green-600">Paid</td>
-                <td className="py-2 text-green-600">Delivered</td>
-              </tr>
-              <tr className="border-b-2">
-                <td className="py-2 text-gray-500">#A581</td>
-                <td className="py-2 text-gray-700">Aug 13, 2021</td>
-                <td className="py-2 text-gray-700">
-                  Ship Container A7 10.4 Rusty (SM-T500 NZSAXAR)
-                </td>
-                <td className="py-2 text-green-600">Paid</td>
-                <td className="py-2 text-yellow-600">In Progress</td>
-              </tr>
-              <tr className="border-b-2">
-                <td className="py-2 text-gray-500">#A582</td>
-                <td className="py-2 text-gray-700">Aug 12, 2021</td>
-                <td className="py-2 text-gray-700">
-                  Ship Container A7 10.4 Rusty (SM-T500 NZSAXAR)
-                </td>
-                <td className="py-2 text-red-600">Unpaid</td>
-                <td className="py-2 text-red-600">Cancelled</td>
-              </tr>
-              <tr className="border-b-2">
-                <td className="py-2 text-gray-500">#A583</td>
-                <td className="py-2 text-gray-700">Aug 12, 2021</td>
-                <td className="py-2 text-gray-700">
-                  Ship Container A7 10.4 Rusty (SM-T500 NZSAXAR)
-                </td>
-                <td className="py-2 text-green-600">Paid</td>
-                <td className="py-2 text-yellow-600">In Progress</td>
-              </tr>
-              <tr className="border-b-2">
-                <td className="py-2 text-gray-500">#A584</td>
-                <td className="py-2 text-gray-700">Aug 10, 2021</td>
-                <td className="py-2 text-gray-700">
-                  Ship Container A7 10.4 Rusty (SM-T500 NZSAXAR)
-                </td>
-                <td className="py-2 text-green-600">Paid</td>
-                <td className="py-2 text-green-600">Delivered</td>
-              </tr>
-            </tbody>
-          </table>
+        {/* User Stats */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-medium mb-4">User Overview</h3>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-sm text-gray-500">Total Users</div>
+                <div className="text-lg font-medium">
+                  {stats.users?.totalUsers || 0}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">Active Users</div>
+                <div className="text-lg font-medium">
+                  {stats.users?.activeUsers || 0}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">Verified Users</div>
+                <div className="text-lg font-medium">
+                  {stats.users?.verifiedUsers || 0}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">New Users (30d)</div>
+                <div className="text-lg font-medium">
+                  {stats.users?.newUsersLast30Days || 0}
+                </div>
+              </div>
+            </div>
+            <div className="pt-4 border-t">
+              <div className="flex gap-2 flex-wrap">
+                <div className="px-3 py-1 text-sm rounded-full bg-purple-100 text-purple-800">
+                  {stats.users?.adminCount || 0} Admin
+                </div>
+                <div className="px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800">
+                  {stats.users?.staffCount || 0} Staff
+                </div>
+                <div className="px-3 py-1 text-sm rounded-full bg-green-100 text-green-800">
+                  {stats.users?.customerCount || 0} Customers
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Sales Stats */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-medium mb-4">Sales Overview</h3>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-sm text-gray-500">Active Sales</div>
+                <div className="text-lg font-medium">
+                  {stats.sales?.activeSales || 0}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">Products on Sale</div>
+                <div className="text-lg font-medium">
+                  {stats.sales?.totalProductsOnSale || 0}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">Average Discount</div>
+                <div className="text-lg font-medium">
+                  {stats.sales?.averageDiscount?.toFixed(1) || 0}%
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">Recent Sales (30d)</div>
+                <div className="text-lg font-medium">
+                  {stats.sales?.recentSales || 0}
+                </div>
+              </div>
+            </div>
+            <div className="pt-4 border-t">
+              <div className="flex gap-2 flex-wrap">
+                {Object.entries(stats.sales?.salesByStatus || {}).map(([status, count]) => (
+                  <div
+                    key={status}
+                    className={`px-3 py-1 text-sm rounded-full ${
+                      status === 'active'
+                        ? 'bg-green-100 text-green-800'
+                        : status === 'ended'
+                        ? 'bg-gray-100 text-gray-800'
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}
+                  >
+                    {count} {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Order Stats */}
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h3 className="text-lg font-medium mb-4">Order Overview</h3>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-sm text-gray-500">Total Orders</div>
+                <div className="text-lg font-medium">
+                  {orderStatsTransformed?.totalOrders || 0}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">Total Revenue</div>
+                <div className="text-lg font-medium">
+                  ₦{orderStatsTransformed?.totalRevenue?.toLocaleString() || 0}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">Average Order Value</div>
+                <div className="text-lg font-medium">
+                  ₦{orderStatsTransformed?.avgOrderValue?.toLocaleString() || 0}
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">Pending Orders</div>
+                <div className="text-lg font-medium">
+                  {orderStatsTransformed?.pendingOrders || 0}
+                </div>
+              </div>
+            </div>
+            <div className="pt-4 border-t">
+              <div className="flex gap-2 flex-wrap">
+                <div className="px-3 py-1 text-sm rounded-full bg-yellow-100 text-yellow-800">
+                  {orderStatsTransformed?.pendingOrders || 0} Pending
+                </div>
+                <div className="px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800">
+                  {orderStatsTransformed?.processingOrders || 0} Processing
+                </div>
+                <div className="px-3 py-1 text-sm rounded-full bg-green-100 text-green-800">
+                  {orderStatsTransformed?.completedOrders || 0} Completed
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </main>
+
+    </div>
   );
 };
 

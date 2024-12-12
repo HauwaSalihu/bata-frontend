@@ -28,7 +28,7 @@ const OrderStatusBadge = ({ status }) => {
   return (
     <div className="flex items-center gap-2">
       <div className={`w-2 h-2 rounded-full ${config.color}`}></div>
-      <span className="text-sm md:text-base">{config.text}</span>
+      <span className="text-xs sm:text-sm">{config.text}</span>
     </div>
   );
 };
@@ -91,39 +91,46 @@ const OrdersPage = () => {
   };
 
   return (
-    <main className="px-4 lg:px-20 mb-10 mt-10">
+    <main className="w-full max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       {/* Hyperlink Section */}
-      <section className="container flex flex-wrap justify-between items-center mx-auto mb-8">
-        <ul className="flex gap-2 text-sm text-gray-500">
-          <li>Home</li>
-          <li>/</li>
+      <section className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+        <ul className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 mb-2 sm:mb-0">
+          <li className="hidden sm:inline">Home</li>
+          <li className="hidden sm:inline">/</li>
           <li className="font-medium text-black">My Orders</li>
         </ul>
-        <div className="flex items-center text-sm">
+        <div className="flex items-center text-xs sm:text-sm">
           <span className="text-black mr-1">Welcome!</span>
-          <span className="text-[#db4444]">{user?.name}</span>
+          <span className="text-[#db4444] truncate max-w-[150px]">{user?.name}</span>
         </div>
       </section>
 
       {/* Main Content */}
       <section className="flex flex-wrap lg:flex-nowrap justify-between gap-8">
-        <AccountSidebar />
+        {/* Sidebar */}
+          <AccountSidebar />
 
-        <div className="w-full lg:w-3/4 space-y-6">
+
+        {/* Orders Content */}
+        <div className="w-full lg:w-3/4">
+          {/* Mobile Sidebar Toggle */}
+          <div className="lg:hidden mb-4">
+            <AccountSidebar />
+          </div>
+
           {/* Filters */}
-          {/* Filters */}
-          <div className="bg-white p-6 rounded-lg shadow-sm border space-y-6">
-            <h3 className="text-lg font-medium border-b pb-4">Filters</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border">
+            <h3 className="text-base sm:text-lg font-medium border-b pb-4 mb-4">Filters</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700">
                   Order Status
                 </label>
                 <select
                   name="status"
                   value={filters.status}
                   onChange={handleFilter}
-                  className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-red-200"
+                  className="w-full px-2 py-1.5 sm:px-3 sm:py-2 border rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-200"
                 >
                   <option value="">All Status</option>
                   <option value="pending">Pending</option>
@@ -135,7 +142,7 @@ const OrdersPage = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700">
                   Start Date
                 </label>
                 <input
@@ -143,12 +150,12 @@ const OrdersPage = () => {
                   name="startDate"
                   value={filters.startDate}
                   onChange={handleFilter}
-                  className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-red-200"
+                  className="w-full px-2 py-1.5 sm:px-3 sm:py-2 border rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-200"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700">
                   End Date
                 </label>
                 <input
@@ -156,11 +163,12 @@ const OrdersPage = () => {
                   name="endDate"
                   value={filters.endDate}
                   onChange={handleFilter}
-                  className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-red-200"
+                  className="w-full px-2 py-1.5 sm:px-3 sm:py-2 border rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-200"
                 />
               </div>
             </div>
           </div>
+
           {/* Orders List */}
           <div className="space-y-4">
             {loading ? (
@@ -171,46 +179,48 @@ const OrdersPage = () => {
               </div>
             ) : (
               orders.map((order) => (
-                <div key={order._id} className="bg-white p-6 rounded-lg shadow-sm border space-y-4">
+                <div key={order._id} className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border">
                   {/* Order Header */}
-                  <div className="flex flex-wrap justify-between items-center gap-4 pb-4 border-b">
-                    <div>
-                      <p className="text-sm text-gray-500">Order ID</p>
-                      <p className="font-medium">{order._id}</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pb-4 border-b">
+                    <div className="col-span-1">
+                      <p className="text-xs text-gray-500">Order ID</p>
+                      <p className="text-xs sm:text-sm font-medium truncate max-w-[120px]">{order._id}</p>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Order Date</p>
-                      <p className="font-medium">{formatDate(order.createdAt)}</p>
+                    <div className="col-span-1">
+                      <p className="text-xs text-gray-500">Order Date</p>
+                      <p className="text-xs sm:text-sm font-medium">{formatDate(order.createdAt)}</p>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Total Amount</p>
-                      <p className="font-medium">₦{order.totalAmount.toLocaleString()}</p>
+                    <div className="col-span-1">
+                      <p className="text-xs text-gray-500">Total Amount</p>
+                      <p className="text-xs sm:text-sm font-medium">₦{order.totalAmount.toLocaleString()}</p>
                     </div>
-                    <OrderStatusBadge status={order.orderStatus} />
+                    <div className="col-span-1 flex justify-end items-center">
+                      <OrderStatusBadge status={order.orderStatus} />
+                    </div>
                   </div>
 
                   {/* Order Items */}
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4 mt-4">
                     {order.items.map((item, index) => (
-                      <div key={index} className="flex flex-wrap md:flex-nowrap items-start gap-4 py-4">
+                      <div key={index} className="flex items-center gap-3 sm:gap-4">
                         <img
                           src={BASE_URL + "/image/" + item.product.images[0].filename}
                           alt={item.product.name}
-                          className="w-20 h-20 object-cover rounded"
+                          className="w-12 h-12 sm:w-20 sm:h-20 object-cover rounded flex-shrink-0"
                         />
-                        <div className="flex-grow min-w-[200px]">
-                          <h4 className="font-medium">{item.product.name}</h4>
-                          <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
+                        <div className="flex-grow overflow-hidden">
+                          <h4 className="text-xs sm:text-sm font-medium truncate">{item.product.name}</h4>
+                          <p className="text-[10px] sm:text-xs text-gray-500">Quantity: {item.quantity}</p>
                         </div>
                       </div>
                     ))}
                   </div>
 
                   {/* Actions */}
-                  <div className="flex justify-end pt-4 border-t">
+                  <div className="flex justify-end mt-4 pt-4 border-t">
                     <Link
                       to={`/orders/${order._id}`}
-                      className="px-4 py-2 text-[#db4444] border border-[#db4444] rounded hover:bg-red-50 transition text-sm"
+                      className="px-3 py-1.5 sm:px-4 sm:py-2 text-[#db4444] border border-[#db4444] rounded hover:bg-red-50 transition text-xs sm:text-sm"
                     >
                       View Details
                     </Link>
@@ -222,11 +232,11 @@ const OrdersPage = () => {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex justify-center gap-2 mt-6">
+            <div className="flex justify-center gap-1 sm:gap-2 mt-6">
               <button
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="px-4 py-2 border rounded disabled:opacity-50"
+                className="px-2 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm border rounded disabled:opacity-50"
               >
                 Previous
               </button>
@@ -235,7 +245,7 @@ const OrdersPage = () => {
                   key={page}
                   onClick={() => setCurrentPage(page)}
                   className={`
-                    px-4 py-2 rounded
+                    px-2 py-1 sm:px-4 sm:py-2 rounded text-xs sm:text-sm
                     ${currentPage === page
                       ? 'bg-[#db4444] text-white'
                       : 'border hover:bg-red-50'
@@ -248,7 +258,7 @@ const OrdersPage = () => {
               <button
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className="px-4 py-2 border rounded disabled:opacity-50"
+                className="px-2 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm border rounded disabled:opacity-50"
               >
                 Next
               </button>

@@ -40,7 +40,7 @@ const makeRequest = async (config, method, endpoint, data, queryParams) => {
           if (config_data.show_error) {
               store.dispatch(
                   addNotification({
-                      type: "danger",
+                      type: "error",
                       title: "Operation Failed!",
                       description: message || "Request Failed.",
                   })
@@ -49,11 +49,10 @@ const makeRequest = async (config, method, endpoint, data, queryParams) => {
           return response.data;
       }
   } catch (error) {
-      console.error("Request failed:", error);
       if (config_data.show_error) {
           store.dispatch(
               addNotification({
-                  type: "danger",
+                  type: "error",
                   title: "Operation Failed!",
                   description: error?.response?.data?.message || "Error handling request.",
               })
