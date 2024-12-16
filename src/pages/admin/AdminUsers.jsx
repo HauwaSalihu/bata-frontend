@@ -386,7 +386,7 @@ const AdminUsers = () => {
                     }))}
                     className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-red-200"
                   >
-                    <option value="staff">Staff</option>
+                    <option value="customer">Customer</option>
                     <option value="admin">Admin</option>
                   </select>
                 </div>
