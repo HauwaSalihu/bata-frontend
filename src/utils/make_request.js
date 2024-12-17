@@ -17,8 +17,8 @@ const makeRequest = async (config, method, endpoint, data, queryParams) => {
           params: queryParams, // Query parameters
           // headers configuration
           headers: data instanceof FormData 
-              ? { 'Content-Type': 'multipart/form-data' }
-              : { 'Content-Type': 'application/json' }
+              ? { 'Content-Type': 'multipart/form-data','ngrok-skip-browser-warning': 'true' }
+              : { 'Content-Type': 'application/json','ngrok-skip-browser-warning': 'true' }
       };
 
     //   console.log(axiosConfig)
