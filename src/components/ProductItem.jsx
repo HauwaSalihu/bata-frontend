@@ -1,32 +1,50 @@
 import { Link } from "react-router-dom";
 
-const ProductItem = ({ product, id, slug, image, name, price, discount, rating }) => {
+const ProductItem = ({
+  product,
+  id,
+  slug,
+  image,
+  name,
+  price,
+  discount,
+  rating,
+}) => {
   // Format price with currency
   const formatPrice = (amount) => {
-    return `NGN ${(amount||0).toLocaleString()}`;
+    return `NGN ${(amount || 0).toLocaleString()}`;
   };
 
-  
   // Calculate sale price for a product
   const calculateSalePrice = (product) => {
     const variation = product?.variations[0]; // Using first variation as base price
     const price = variation.price;
-    return Math.round(price * (1 - (product?.discountPercentage||product?.activeSale?.discountPercentage) / 100));
+    return Math.round(
+      price *
+        (1 -
+          (product?.discountPercentage ||
+            product?.activeSale?.discountPercentage) /
+            100)
+    );
   };
-  const salePrice = discount? calculateSalePrice(product):undefined;
+  const salePrice = discount ? calculateSalePrice(product) : undefined;
   return (
-    <Link className="text-gray-700 cursor-pointer" to={`/product/${slug}`} state={{ product }}>
+    <Link
+      className="text-gray-700 cursor-pointer"
+      to={`/product/${slug}`}
+      state={{ product }}
+    >
       <div className="flex flex-col shadow-md pb-5 px-5 bg-white rounded-lg">
         <div className="relative h-64">
           {discount && (
             <div className="absolute top-2 left-2 px-3 py-1 bg-[#db4444] text-white text-xs rounded">
-              {discount+"%"}
+              {discount + "%"}
             </div>
           )}
           <img
             src={image}
             alt={name}
-            className="h-full w-full object-cover rounded-lg"
+            className="h-full w-full object-contain rounded-lg"
           />
         </div>
         <div className="mt-4 flex flex-col items-center">
@@ -47,9 +65,7 @@ const ProductItem = ({ product, id, slug, image, name, price, discount, rating }
               </p>
             )}
           </div>
-          {rating && (
-            <p className="text-sm text-gray-500 mt-1">{rating}</p>
-          )}
+          {rating && <p className="text-sm text-gray-500 mt-1">{rating}</p>}
         </div>
       </div>
     </Link>
