@@ -1,5 +1,7 @@
 import React from "react";
 import LastHome from "../components/LastHome";
+import LocationsSection from "../components/LocationsSection";
+
 function About() {
   return (
     <div>
@@ -71,6 +73,7 @@ function About() {
         </div>
       </section>
       <LastHome />
+      <LocationsSection />
     </div>
   );
 }

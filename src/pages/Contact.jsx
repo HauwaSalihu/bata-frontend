@@ -21,7 +21,7 @@ function Contact() {
                 To Call Us
               </span>
               <p className="mt-5">We are available 24/7, 7 days a week.</p>
-              <p className="mt-5">Phone: +234-90-456-789</p>
+              <p className="mt-5">Phone: +234 810 005 7615</p>
             </div>
 
             <div className="py-10">
@@ -32,8 +32,7 @@ function Contact() {
               <p className="mt-5">
                 Fill out our form and we will contact you within 24 hours.
               </p>
-              <p className="mt-5">Email:batanigeria@gmail.com</p>
-              <p className="mt-5">Email:support@batanigeria.com</p>
+              <p className="mt-5">Email:bata.helpline@gmail.com</p>
             </div>
           </div>
           {/* <!-- Contact form --> */}

@@ -51,6 +51,11 @@ const Header = () => {
             </Link>
           </li>
           <li>
+            <Link to="/csr" className="text-gray-600 hover:text-[#db4444]">
+              CSR
+            </Link>
+          </li>
+          <li>
             <Link to="/contact" className="text-gray-600 hover:text-[#db4444]">
               Contact
             </Link>
@@ -201,15 +206,17 @@ const Header = () => {
               </Link>
             </li>
             <li>
+              <Link to="/csr" className="block text-gray-600">
+                CSR
+              </Link>
+            </li>
+            <li>
               <Link to="/contact" className="block text-gray-600">
                 Contact
               </Link>
             </li>
             <li>
-              <Link
-                to="/collection"
-                className="text-gray-600 hover:text-[#db4444]"
-              >
+              <Link to="/collection" className="block text-gray-600">
                 Collection
               </Link>
             </li>

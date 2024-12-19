@@ -25,11 +25,11 @@ import { updateCart } from "./utils/slicers/cartSlice";
 import MyAccountPage from "./pages/MyAccountPage";
 import ChangePassword from "./pages/ChangePassword";
 import OrderDetailsPage from "./pages/OrderDetailsPage";
-import ProtectedRoute from './components/ProtectedRoute';
+import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/admin/Dashboard";
 import AdminProducts from "./pages/admin/AdminProducts";
 import ProductForm from "./pages/admin/ProductForm";
-import AdminLayout from "./components/AdminLayout"
+import AdminLayout from "./components/AdminLayout";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminOrderDetails from "./pages/admin/AdminOrderDetails";
 import AdminReviews from "./pages/admin/AdminReviews";
@@ -37,7 +37,7 @@ import AdminSales from "./pages/admin/AdminSale";
 import { CreateSale, EditSale } from "./pages/admin/SaleForm";
 import AdminCategories from "./pages/admin/AdminCategories";
 import AdminUsers from "./pages/admin/AdminUsers";
-
+import Csr from "./pages/Csr";
 const App = () => {
   const dispatch = useDispatch();
   setupAxiosInterceptors(dispatch);
@@ -51,7 +51,7 @@ const App = () => {
         try {
           const [userResponse, cartResponse] = await Promise.all([
             me({}),
-            getCart({})
+            getCart({}),
           ]);
 
           if (userResponse?.status) {
@@ -60,13 +60,16 @@ const App = () => {
             // Set cart data if cart request was successful
             if (cartResponse?.status) {
               // Match backend response format exactly
-              const { cart, total, itemCount, invalidItems } = cartResponse.data;
-              dispatch(updateCart({
-                cart,
-                total,
-                itemCount,
-                invalidItems
-              }));
+              const { cart, total, itemCount, invalidItems } =
+                cartResponse.data;
+              dispatch(
+                updateCart({
+                  cart,
+                  total,
+                  itemCount,
+                  invalidItems,
+                })
+              );
             }
           } else {
             dispatch(resetUser());
@@ -79,7 +82,7 @@ const App = () => {
             );
           }
         } catch (error) {
-          console.error('Error during initialization:', error);
+          console.error("Error during initialization:", error);
           dispatch(resetUser());
           dispatch(
             addNotification({
@@ -108,6 +111,7 @@ const App = () => {
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<About />} />
+        <Route path="/csr" element={<Csr />} />
         <Route path="/collection" element={<CategoryPage />} />
         <Route path="/product/:slug" element={<ProductPage />} />
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
@@ -118,7 +122,7 @@ const App = () => {
         <Route
           path="/cart"
           element={
-            <ProtectedRoute allowedRoles={['customer', 'admin']}>
+            <ProtectedRoute allowedRoles={["customer", "admin"]}>
               <CartPage />
             </ProtectedRoute>
           }
@@ -126,7 +130,7 @@ const App = () => {
         <Route
           path="/checkout"
           element={
-            <ProtectedRoute allowedRoles={['customer', 'admin']}>
+            <ProtectedRoute allowedRoles={["customer", "admin"]}>
               <CheckoutPage />
             </ProtectedRoute>
           }
@@ -134,7 +138,7 @@ const App = () => {
         <Route
           path="/orders"
           element={
-            <ProtectedRoute allowedRoles={['customer', 'admin']}>
+            <ProtectedRoute allowedRoles={["customer", "admin"]}>
               <Orders />
             </ProtectedRoute>
           }
@@ -142,7 +146,7 @@ const App = () => {
         <Route
           path="/orders/:orderId"
           element={
-            <ProtectedRoute allowedRoles={['customer', 'admin']}>
+            <ProtectedRoute allowedRoles={["customer", "admin"]}>
               <OrderDetailsPage />
             </ProtectedRoute>
           }
@@ -150,7 +154,7 @@ const App = () => {
         <Route
           path="/profile"
           element={
-            <ProtectedRoute allowedRoles={['customer', 'admin']}>
+            <ProtectedRoute allowedRoles={["customer", "admin"]}>
               <MyAccountPage />
             </ProtectedRoute>
           }
@@ -158,7 +162,7 @@ const App = () => {
         <Route
           path="/change-password"
           element={
-            <ProtectedRoute allowedRoles={['customer', 'admin']}>
+            <ProtectedRoute allowedRoles={["customer", "admin"]}>
               <ChangePassword />
             </ProtectedRoute>
           }
@@ -166,7 +170,7 @@ const App = () => {
         <Route
           path="/admin"
           element={
-            <ProtectedRoute allowedRoles={['admin']}>
+            <ProtectedRoute allowedRoles={["admin"]}>
               <AdminLayout />
             </ProtectedRoute>
           }
@@ -186,11 +190,10 @@ const App = () => {
           <Route path="users" element={<AdminUsers />} />
         </Route>
 
-
         {/* Catch all other routes */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      {!location.pathname.startsWith('/admin') && <Footer />}
+      {!location.pathname.startsWith("/admin") && <Footer />}
     </div>
   );
 };

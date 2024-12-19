@@ -25,9 +25,12 @@ function Footer() {
         {/* Support Section */}
         <div className="flex flex-col gap-4 max-w-sm">
           <h3 className="font-bold text-xl tracking-wide">Support</h3>
-          <p className="font-medium">Bata Nigeria Enugu</p>
-          <p>batanigeria@gmail.com</p>
-          <p>+234-90-456-789</p>
+          <h5 className="font-bold">BATA NIGERIA HEADQUARTERS</h5>
+          <p className="font-medium ">
+            House 13, Road 8, FHA Estate Lugbe, Abuja, Nigeria.
+          </p>
+          <p>bata.helpline@gmail.com</p>
+          <p>+234 810 005 7615</p>
         </div>
 
         {/* Account Section */}

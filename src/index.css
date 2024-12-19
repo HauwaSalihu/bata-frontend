@@ -17,3 +17,9 @@ a.active hr {
     color: white;
   }
 }
+
+.ant-carousel .slick-prev,
+.ant-carousel .slick-next {
+  font-size: inherit;
+  color: black;
+}
