@@ -415,11 +415,18 @@ const ProductPage = () => {
             {/* Delivery Details */}
             <div className="mt-4 border p-4 rounded">
               <div className="mb-2">
-                <strong>Free Delivery</strong>: Enter your postal code for
-                delivery availability.
+                <strong>Delivery locations Pricing</strong>
+                <ul>
+                  <li>Lagos 1-5pairs 8000</li>
+                  <li>5 upwards- 15,000</li>
+                  <li>Within abuja</li>
+                  <li>1-5pairs 5000</li>
+                  <li>5 upwards 8000</li>
+                </ul>
+
               </div>
               <div>
-                <strong>Return Delivery</strong>: Free 30 Days Delivery Returns.
+                <strong>Return Policy</strong>:  7days return policy
               </div>
             </div>
           </div>

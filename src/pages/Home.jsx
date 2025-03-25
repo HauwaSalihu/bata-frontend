@@ -7,13 +7,14 @@ import CustomerReviews from "../components/CustomerReviews";
 import LocationsSection from "../components/LocationsSection";
 import LastHome from "../components/LastHome";
 import Hero from "../components/Hero";
+
 function Home() {
   return (
     <div>
       <Hero />
       <SalesHome />
       <ProductCard />
-      {/* <FeaturedSection /> */}
+      <FeaturedSection />
       <BrandsSection />
       <CustomerReviews />
       <LocationsSection />
