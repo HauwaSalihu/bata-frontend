@@ -13,6 +13,7 @@ const CategoryPage = () => {
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -29,6 +30,7 @@ const CategoryPage = () => {
   const filters = {
     search: searchParams.get("search") || "",
     category: searchParams.get("category") || "",
+    subcategory: searchParams.get("subcategory") || "",
     minPrice: searchParams.get("minPrice") || "",
     maxPrice: searchParams.get("maxPrice") || "",
     status: searchParams.get("status") || "published",
@@ -39,9 +41,19 @@ const CategoryPage = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await getCategories({});
+      const response = await getCategories({ });
       if (response.status) {
         setCategories(response.data.categories);
+        
+        // If there's a category filter, set its subcategories
+        if (filters.category) {
+          const selectedCategory = response.data.categories.find(
+            c => c._id === filters.category
+          );
+          if (selectedCategory) {
+            setSubcategories(selectedCategory.subcategories || []);
+          }
+        }
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -51,10 +63,12 @@ const CategoryPage = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await getProducts({params:{
-        ...filters,
-        limit: 12
-      }});
+      const response = await getProducts({
+        params: {
+          ...filters,
+          limit: 12
+        }
+      });
 
       if (response.status) {
         setProducts(response.data.products);
@@ -93,6 +107,15 @@ const CategoryPage = () => {
       } else {
         prev.delete(key);
       }
+      
+      // Reset subcategory when category changes
+      if (key === 'category') {
+        prev.delete('subcategory');
+        setSubcategories(
+          categories.find(c => c._id === value)?.subcategories || []
+        );
+      }
+      
       if (key !== 'page') prev.set('page', '1');
       return prev;
     });
@@ -162,6 +185,25 @@ const CategoryPage = () => {
                 ))}
               </select>
             </div>
+
+            {/* Subcategories - Only show if a category is selected */}
+            {filters.category && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Subcategories</label>
+                <select
+                  value={filters.subcategory}
+                  onChange={(e) => handleFilterChange('subcategory', e.target.value)}
+                  className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-200"
+                >
+                  <option value="">All Subcategories</option>
+                  {subcategories.map((subcategory) => (
+                    <option key={subcategory._id} value={subcategory._id}>
+                      {subcategory.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Price Range */}
             <div className="space-y-2">
@@ -236,7 +278,7 @@ const CategoryPage = () => {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {products.map((product) => (
                   <ProductItem
-                  product={product}
+                    product={product}
                     key={product._id}
                     name={product.name}
                     price={product?.variations[0]?.price || 0}

@@ -14,7 +14,7 @@ function Home() {
       <Hero />
       <SalesHome />
       <ProductCard />
-      <FeaturedSection />
+      {/* <FeaturedSection /> */}
       <BrandsSection />
       <CustomerReviews />
       <LocationsSection />

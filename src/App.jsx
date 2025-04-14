@@ -38,6 +38,7 @@ import { CreateSale, EditSale } from "./pages/admin/SaleForm";
 import AdminCategories from "./pages/admin/AdminCategories";
 import AdminUsers from "./pages/admin/AdminUsers";
 import Csr from "./pages/Csr";
+import AdminAds from "./pages/admin/AdminAds";
 const App = () => {
   const dispatch = useDispatch();
   setupAxiosInterceptors(dispatch);
@@ -188,6 +189,7 @@ const App = () => {
           <Route path="sales/edit/:id" element={<EditSale />} />
           <Route path="categories" element={<AdminCategories />} />
           <Route path="users" element={<AdminUsers />} />
+          <Route path="ads" element={<AdminAds />} />
         </Route>
 
         {/* Catch all other routes */}

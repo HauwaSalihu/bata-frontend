@@ -35,6 +35,10 @@ const AdminSidebar = () => {
     {
       name: "Users",
       path: "/admin/users"
+    },
+    {
+      name: "Ads",
+      path: "/admin/ads"
     }
   ];
 

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import AdminSidebar from "../../components/AdminSidebar";
 import { createProduct, updateProduct, getProductBySlug } from "../../utils/api/product";
-import { getCategories } from "../../utils/api/category";
+import { getCategories } from "../../utils/api/category"; // Removed getSubcategoriesByCategory import
 import { addNotification } from "../../utils/slicers/notificationSlice";
 import { BASE_URL } from "../../utils/variables";
 
@@ -15,14 +15,16 @@ const ProductForm = () => {
 
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
   const [selectedImages, setSelectedImages] = useState([]);
   const [previewImages, setPreviewImages] = useState([]);
   const [variations, setVariations] = useState([{ name: '', price: '', quantity: '' }]);
-  
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     category: "",
+    subcategory: "",
     status: "draft"
   });
 
@@ -30,7 +32,8 @@ const ProductForm = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const categoriesResponse = await getCategories({});
+        setLoading(true);
+        const categoriesResponse = await getCategories({ populate: 'subcategories' }); // Request populated subcategories
         if (categoriesResponse.status) {
           setCategories(categoriesResponse.data.categories);
         }
@@ -43,10 +46,10 @@ const ProductForm = () => {
               name: product.name,
               description: product.description,
               category: product.category._id,
+              subcategory: product.subcategory?._id || "",
               status: product.status
             });
             setVariations(product.variations);
-            // Set preview images for existing product images
             setPreviewImages(
               product.images.map(img => ({
                 url: BASE_URL + "/image/" + img.filename,
@@ -54,6 +57,16 @@ const ProductForm = () => {
                 isExisting: true
               }))
             );
+
+            // Find and set subcategories from the already loaded categories
+            if (product.category._id) {
+              const selectedCategory = categoriesResponse.data.categories.find(
+                c => c._id === product.category._id
+              );
+              if (selectedCategory) {
+                setSubcategories(selectedCategory.subcategories || []);
+              }
+            }
           }
         }
       } catch (error) {
@@ -62,23 +75,38 @@ const ProductForm = () => {
           title: "Error",
           description: "Failed to load form data"
         }));
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
-  }, [slug]);
+  }, [slug, dispatch, isEditMode]);
+
+  // Load subcategories when category changes
+  const handleCategoryChange = (categoryId) => {
+    const selectedCategory = categories.find(c => c._id === categoryId);
+    const newSubcategories = selectedCategory?.subcategories || [];
+
+    setSubcategories(newSubcategories);
+    setFormData(prev => ({
+      ...prev,
+      category: categoryId,
+      subcategory: "" // Reset subcategory when category changes
+    }));
+  };
+
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     setSelectedImages(prev => [...prev, ...files]);
-    
-    // Create preview URLs
+
     const newPreviews = files.map(file => ({
       url: URL.createObjectURL(file),
       filename: file.name,
       isExisting: false
     }));
-    
+
     setPreviewImages(prev => [...prev, ...newPreviews]);
   };
 
@@ -102,39 +130,43 @@ const ProductForm = () => {
   };
 
   const removeVariation = (index) => {
-    setVariations(variations.filter((_, i) => i !== index));
+    if (variations.length > 1) {
+      setVariations(variations.filter((_, i) => i !== index));
+    }
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-  
+
     try {
       const formDataToSend = new FormData();
       formDataToSend.append('name', formData.name);
       formDataToSend.append('description', formData.description);
       formDataToSend.append('category', formData.category);
+      if (formData.subcategory) {
+        formDataToSend.append('subcategory', formData.subcategory);
+      }
       formDataToSend.append('status', formData.status);
       formDataToSend.append('variations', JSON.stringify(variations));
-  
+
       // Append new images
       selectedImages.forEach(image => {
         formDataToSend.append('images', image);
       });
-  
-      // If editing, handle existing images as an array
-if (isEditMode) {
-    // Get existing image filenames
-    previewImages
-      .filter(img => img.isExisting)
-      .forEach(img => {
-        formDataToSend.append('existingImages[]', img.filename);
-      });
-  }
+
+      // Handle existing images in edit mode
+      if (isEditMode) {
+        const existingImages = previewImages
+          .filter(img => img.isExisting)
+          .map(img => img.filename);
+        formDataToSend.append('existingImages', JSON.stringify(existingImages));
+      }
 
       const response = isEditMode
         ? await updateProduct({ slug, data: formDataToSend })
         : await createProduct({ data: formDataToSend });
-  
+
       if (response.status) {
         dispatch(addNotification({
           type: "success",
@@ -159,25 +191,23 @@ if (isEditMode) {
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="flex">
-        
+        <AdminSidebar />
         <div className="flex-1 p-8">
-          {/* Header */}
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-gray-900">
               {isEditMode ? 'Edit Product' : 'Add New Product'}
             </h1>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="max-w">
             <div className="bg-white rounded-lg shadow-sm border p-6 space-y-6">
               {/* Basic Information */}
               <div className="space-y-4">
                 <h2 className="text-lg font-medium border-b pb-2">Basic Information</h2>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Product Name
+                    Product Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -190,7 +220,7 @@ if (isEditMode) {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Description
+                    Description <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     required
@@ -204,13 +234,14 @@ if (isEditMode) {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Category
+                      Category <span className="text-red-500">*</span>
                     </label>
                     <select
                       required
                       value={formData.category}
-                      onChange={e => setFormData({ ...formData, category: e.target.value })}
+                      onChange={e => handleCategoryChange(e.target.value)}
                       className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-red-200"
+                      disabled={loading}
                     >
                       <option value="">Select Category</option>
                       {categories.map(category => (
@@ -223,13 +254,32 @@ if (isEditMode) {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Status
+                      Subcategory
+                    </label>
+                    <select
+                      value={formData.subcategory}
+                      onChange={e => setFormData({ ...formData, subcategory: e.target.value })}
+                      className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-red-200"
+                      disabled={!formData.category || loading}
+                    >
+                      <option value="">Select Subcategory</option>
+                      {subcategories.map(subcategory => (
+                        <option key={subcategory._id} value={subcategory._id}>
+                          {subcategory.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Status <span className="text-red-500">*</span>
                     </label>
                     <select
                       required
                       value={formData.status}
                       onChange={e => setFormData({ ...formData, status: e.target.value })}
                       className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-red-200"
+                      disabled={loading}
                     >
                       <option value="draft">Draft</option>
                       <option value="published">Published</option>
@@ -242,7 +292,8 @@ if (isEditMode) {
               {/* Product Images */}
               <div className="space-y-4">
                 <h2 className="text-lg font-medium border-b pb-2">Product Images</h2>
-                
+                <p className="text-sm text-gray-500">At least one image is required</p>
+
                 <div className="flex flex-wrap gap-4">
                   {previewImages.map((image, index) => (
                     <div key={index} className="relative">
@@ -268,6 +319,7 @@ if (isEditMode) {
                       accept="image/*"
                       onChange={handleImageChange}
                       className="hidden"
+                      disabled={loading}
                     />
                   </label>
                 </div>
@@ -281,6 +333,7 @@ if (isEditMode) {
                     type="button"
                     onClick={addVariation}
                     className="text-[#db4444] hover:text-[#c03838]"
+                    disabled={loading}
                   >
                     + Add Variation
                   </button>
@@ -290,7 +343,7 @@ if (isEditMode) {
                   <div key={index} className="flex gap-4 items-start">
                     <div className="flex-1">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Size/Name
+                        Variation Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -298,41 +351,46 @@ if (isEditMode) {
                         value={variation.name}
                         onChange={e => handleVariationChange(index, 'name', e.target.value)}
                         className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-red-200"
+                        disabled={loading}
                       />
                     </div>
                     <div className="flex-1">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Price
+                        Price <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="number"
                         required
+                        min="0"
+                        step="0.01"
                         value={variation.price}
                         onChange={e => handleVariationChange(index, 'price', e.target.value)}
                         className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-red-200"
+                        disabled={loading}
                       />
                     </div>
                     <div className="flex-1">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Quantity
+                        Quantity <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="number"
                         required
+                        min="0"
                         value={variation.quantity}
                         onChange={e => handleVariationChange(index, 'quantity', e.target.value)}
                         className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-red-200"
+                        disabled={loading}
                       />
                     </div>
-                    {variations.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeVariation(index)}
-                        className="mt-6 text-red-500 hover:text-red-700"
-                      >
-                        Remove
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeVariation(index)}
+                      className="mt-6 text-red-500 hover:text-red-700"
+                      disabled={loading || variations.length <= 1}
+                    >
+                      Remove
+                    </button>
                   </div>
                 ))}
               </div>
@@ -343,6 +401,7 @@ if (isEditMode) {
                   type="button"
                   onClick={() => navigate('/admin/products')}
                   className="px-4 py-2 border rounded hover:bg-gray-50"
+                  disabled={loading}
                 >
                   Cancel
                 </button>
@@ -351,7 +410,15 @@ if (isEditMode) {
                   disabled={loading}
                   className="px-4 py-2 bg-[#db4444] text-white rounded hover:bg-[#c03838] disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
-                  {loading ? 'Saving...' : isEditMode ? 'Update Product' : 'Create Product'}
+                  {loading ? (
+                    <span className="flex items-center justify-center">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      {isEditMode ? 'Updating...' : 'Creating...'}
+                    </span>
+                  ) : isEditMode ? 'Update Product' : 'Create Product'}
                 </button>
               </div>
             </div>
