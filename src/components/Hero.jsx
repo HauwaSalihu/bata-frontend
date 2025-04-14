@@ -60,7 +60,7 @@ function Hero() {
   }, [ads]);
 
   return (
-    <div className="w-full">
+    <div className="w-full container mx-auto">
       <section className="w-full mx-auto flex flex-col md:flex-row justify-start items-center border-b border-t pb-10">
         {/* side nav - hidden on smaller screens */}
         <div className="xl:flex-col items-start min-h-[400px] xl:gap-5 border-r border-gray-200 px-8 pt-10 -mt-48 hidden xl:block text-justify w-[20%]">
@@ -98,7 +98,7 @@ function Hero() {
         {/* Main content area - takes remaining width */}
         <div className="flex-1 flex flex-col-reverse lg:flex-row gap-8 lg:gap-12 xl:gap-20 px-4 sm:px-6 lg:px-8 pt-10">
           {/* Left text content */}
-          <div className="flex-1 flex flex-col text-center md:text-left mt-10 max-w-2xl">
+          <div className="flex flex-col text-center md:text-left mt-10 max-w-2xl">
             <h1 className="font-bold text-4xl md:text-7xl">
               BATA SINCE <br />
               1894
@@ -130,7 +130,7 @@ function Hero() {
           </div>
           
           {/* Full-width Ad Carousel */}
-          <div className="flex-1 relative w-full h-[500px] rounded-lg shadow-lg overflow-hidden">
+          <div className="w-full min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] relative rounded-lg shadow-lg overflow-hidden">
             {isLoading ? (
               <div className="w-full h-full bg-gray-200 animate-pulse"></div>
             ) : ads.length > 0 ? (
