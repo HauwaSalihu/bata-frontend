@@ -313,9 +313,9 @@ const ProductPage = () => {
             <p className="mt-4 text-sm text-black">{productData.description}</p>
 
             {/* Variations/Sizes */}
-            <div className="flex items-center gap-4 mt-4">
+            <div className="flex flex-wrap items-center gap-4 mt-4">
               <span className="text-xl">Size:</span>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {productData.variations?.map((variation) => (
                   <button
                     onClick={() => handleVariationSelect(variation)}
@@ -417,9 +417,10 @@ const ProductPage = () => {
               <div className="mb-2">
                 <strong>Delivery locations Pricing</strong>
                 <ul>
-                  <li>Lagos 1-5pairs 8000</li>
+                  <li className="font-medium">Lagos </li>
+                    <li>1-5pairs 8000</li>
                   <li>5 upwards- 15,000</li>
-                  <li>Within abuja</li>
+                  <li className="font-medium">Abuja</li>
                   <li>1-5pairs 5000</li>
                   <li>5 upwards 8000</li>
                 </ul>

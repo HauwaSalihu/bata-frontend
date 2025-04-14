@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import ProductItem from "./ProductItem";
 import { getBestSelling } from "../utils/api/product";
 import { BASE_URL } from "../utils/variables";
+import { Link } from "react-router-dom";
 
 function ProductCard() {
   const [bestSellers, setBestSellers] = useState([]);
@@ -33,9 +34,12 @@ function ProductCard() {
           <h3 className="text-2xl md:text-3xl font-bold">
             Best Selling Products
           </h3>
+           <Link to="/collection">
           <button className="p-2 md:p-3 bg-red-500 rounded text-white hover:bg-red-600 transition-colors duration-200">
+           
             View All
           </button>
+           </Link>
         </div>
 
         <section className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">

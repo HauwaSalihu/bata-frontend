@@ -46,6 +46,14 @@ const Header = () => {
             </Link>
           </li>
           <li>
+            <Link
+              to="/collection"
+              className="text-gray-600 hover:text-[#db4444]"
+            >
+              Collection
+            </Link>
+          </li>
+          <li>
             <Link to="/about" className="text-gray-600 hover:text-[#db4444]">
               About
             </Link>
@@ -60,14 +68,7 @@ const Header = () => {
               Contact
             </Link>
           </li>
-          <li>
-            <Link
-              to="/collection"
-              className="text-gray-600 hover:text-[#db4444]"
-            >
-              Collection
-            </Link>
-          </li>
+        
         </ul>
 
         {/* Right Section */}
@@ -201,6 +202,11 @@ const Header = () => {
               </Link>
             </li>
             <li>
+              <Link to="/collection" className="block text-gray-600">
+                Collection
+              </Link>
+            </li>
+            <li>
               <Link to="/about" className="block text-gray-600">
                 About
               </Link>
@@ -215,11 +221,7 @@ const Header = () => {
                 Contact
               </Link>
             </li>
-            <li>
-              <Link to="/collection" className="block text-gray-600">
-                Collection
-              </Link>
-            </li>
+          
             {!isAuthenticated && (
               <>
                 <li>
