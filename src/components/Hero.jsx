@@ -7,6 +7,7 @@ import { BASE_URL } from "../utils/variables";
 
 function Hero() {
   const [categories, setCategories] = useState([]);
+  const [expandedCategories, setExpandedCategories] = useState([]); 
   const [ads, setAds] = useState([]);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -18,6 +19,14 @@ function Hero() {
     if (searchQuery.trim()) {
       navigate(`/collection?search=${encodeURIComponent(searchQuery.trim())}`);
     }
+  };
+
+  const handleToggleCategory = (catId) => {
+    setExpandedCategories((prev) =>
+      prev.includes(catId)
+        ? prev.filter((id) => id !== catId)
+        : [...prev, catId]
+    );
   };
 
   useEffect(() => {
@@ -62,7 +71,7 @@ function Hero() {
   return (
     <div className="w-full container mx-auto">
       <section className="w-full mx-auto flex flex-col md:flex-row justify-start items-center border-b border-t pb-10">
-        {/* side nav - hidden on smaller screens */}
+        {/* Side nav */}
         <div className="xl:flex-col items-start min-h-[400px] xl:gap-5 border-r border-gray-200 px-8 pt-10 -mt-48 hidden xl:block text-justify w-[20%]">
           <h2 className="font-semibold text-lg mb-6 text-gray-800">Categories</h2>
           <ul className="space-y-4">
@@ -74,20 +83,63 @@ function Hero() {
               </div>
             ) : (
               categories.map((category) => (
-                <li key={category._id}>
-                  <Link 
-                    to={`/collection?category=${category._id}`}
-                    className="group flex items-center justify-between py-2 w-full text-gray-600 hover:text-red-600 transition-all duration-200"
-                  >
-                    <span className="text-sm font-medium">{category.name}</span>
-                    {category.hasSubcategories && (
-                      <img
-                        src={assets.dropdown_icon}
-                        className="h-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                        alt=""
-                      />
+                <li
+                  key={category._id}
+                  className="relative"
+                  onMouseEnter={() =>
+                    setExpandedCategories((prev) =>
+                      prev.includes(category._id)
+                        ? prev
+                        : [...prev, category._id]
+                    )
+                  }
+                  onMouseLeave={() =>
+                    setExpandedCategories((prev) =>
+                      prev.filter((id) => id !== category._id)
+                    )
+                  }
+                >
+                  <div className="flex items-center justify-between py-2 w-full text-gray-600 hover:text-red-600 transition-all duration-200">
+                    <Link
+                      to={`/collection?category=${category._id}`}
+                      className="text-sm font-medium"
+                    >
+                      {category.name}
+                    </Link>
+                    {category.subcategories?.length > 0 && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          handleToggleCategory(category._id);
+                        }}
+                        className="ml-2 focus:outline-none"
+                      >
+                        <img
+                          src={assets.dropdown_icon}
+                          className="h-3 rotate-90"
+                          alt=""
+                        />
+                      </button>
                     )}
-                  </Link>
+                  </div>
+                  {category.subcategories?.length > 0 &&
+                    expandedCategories.includes(category._id) && (
+                      <div className="ml-4 mt-1">
+                        <ul className="space-y-2">
+                          {category.subcategories.map((subcat) => (
+                            <li key={subcat._id}>
+                              <Link
+                                to={`/collection?subcategory=${subcat._id}`}
+                                className="block text-gray-600 hover:text-red-600 transition-colors"
+                              >
+                                {subcat.name}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   <div className="h-[1px] bg-gray-100 mt-2"></div>
                 </li>
               ))
@@ -95,7 +147,7 @@ function Hero() {
           </ul>
         </div>
 
-        {/* Main content area - takes remaining width */}
+        {/* Main content area */}
         <div className="flex-1 flex flex-col-reverse lg:flex-row gap-8 lg:gap-12 xl:gap-20 px-4 sm:px-6 lg:px-8 pt-10">
           {/* Left text content */}
           <div className="flex flex-col text-center md:text-left mt-10 max-w-2xl">
@@ -171,7 +223,6 @@ function Hero() {
                 )}
               </>
             ) : (
-              // Fallback if no ads are available
               <img
                 src="/bata-home.jpg"
                 className="w-full h-full object-cover"

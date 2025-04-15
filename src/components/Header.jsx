@@ -13,6 +13,7 @@ const Header = () => {
   const dispatch = useDispatch();
   const [searchQuery, setSearchQuery] = useState("");
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  
   // New state for mobile dropdown for collections
   const [showMobileCollections, setShowMobileCollections] = useState(false);
   
@@ -68,26 +69,39 @@ const Header = () => {
             <button className="text-gray-600 hover:text-[#db4444] focus:outline-none">
               Collection
             </button>
-            <div className="absolute left-0 top-full mt-1 w-64 bg-white border border-gray-200 shadow-lg p-4 hidden group-hover:block group-focus-within:block">
-              <ul className="space-y-2">
-                {categories.map((category) => (
-                  <li key={category._id}>
-                    <Link
-                      to={`/collection?category=${category._id}`}
-                      className="flex items-center justify-between text-gray-600 hover:text-red-600 transition-all duration-200"
-                    >
-                      <span className="text-sm font-medium">{category.name}</span>
-                      {category.hasSubcategories && (
-                        <img
-                          src={assets.dropdown_icon}
-                          className="h-3"
-                          alt=""
-                        />
+            <div className="absolute top-full mt-1  bg-white border border-gray-200 shadow-lg p-4 hidden group-hover:block group-focus-within:block">
+
+              <div className="mx-auto">
+                <ul className="space-y-2 flex justify-between w-[1000px]">
+                  {categories.map((category) => (
+                    <li key={category._id} className="w-full">
+                      <Link
+                        to={`/collection?category=${category._id}`}
+                        className="flex items-center justify-between text-gray-600 hover:text-red-600 transition-all duration-200"
+                      >
+                        <span className="text-sm font-medium">{category.name}</span>
+                      </Link>
+                      {category.subcategories?.length > 0 && (
+                        <div className="ml-4 mt-1">
+                          <ul className="space-y-2">
+                            <h1 className="text-xs font-semibold">All {category.name}</h1>
+                            {category.subcategories.map((subcat) => (
+                              <li key={subcat._id}>
+                                <Link
+                                  to={`/collection?subcategory=${subcat._id}`}
+                                  className="block text-gray-600 hover:text-red-600 transition-colors"
+                                >
+                                  {subcat.name}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       )}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </li>
           <li>
@@ -265,6 +279,23 @@ const Header = () => {
                             />
                           )}
                         </Link>
+                        {category.subcategories?.length > 0 && (
+                        <div className="ml-4 mt-1">
+                          <ul className="space-y-2">
+                            <h1 className="text-xs font-semibold">All {category.name}</h1>
+                            {category.subcategories.map((subcat) => (
+                              <li key={subcat._id}>
+                                <Link
+                                  to={`/collection?subcategory=${subcat._id}`}
+                                  className="block text-gray-600 hover:text-red-600 transition-colors"
+                                >
+                                  {subcat.name}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                       </li>
                     ))}
                   </ul>
