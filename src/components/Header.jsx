@@ -1,17 +1,36 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { resetUser } from "../utils/slicers/userSlice";
 import { clearCart } from "../utils/slicers/cartSlice";
 import { selectCartItemCount } from "../utils/slicers/cartSlice";
+import { getCategories } from "../utils/api/category";
 import { assets } from "../assets/assets";
 
 const Header = () => {
+  const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [searchQuery, setSearchQuery] = useState("");
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  // New state for mobile dropdown for collections
+  const [showMobileCollections, setShowMobileCollections] = useState(false);
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch categories
+        const categoriesResponse = await getCategories({});
+        if (categoriesResponse.status) {
+          setCategories(categoriesResponse.data.categories);
+        }
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      } 
+    };
 
+    fetchData();
+  }, []);
   // Get user and cart state from Redux
   const { user, isAuthenticated } = useSelector((state) => state.user);
   const cartItemCount = useSelector(selectCartItemCount);
@@ -45,13 +64,31 @@ const Header = () => {
               Home
             </Link>
           </li>
-          <li>
-            <Link
-              to="/collection"
-              className="text-gray-600 hover:text-[#db4444]"
-            >
+          <li className="relative group">
+            <button className="text-gray-600 hover:text-[#db4444] focus:outline-none">
               Collection
-            </Link>
+            </button>
+            <div className="absolute left-0 top-full mt-1 w-64 bg-white border border-gray-200 shadow-lg p-4 hidden group-hover:block group-focus-within:block">
+              <ul className="space-y-2">
+                {categories.map((category) => (
+                  <li key={category._id}>
+                    <Link
+                      to={`/collection?category=${category._id}`}
+                      className="flex items-center justify-between text-gray-600 hover:text-red-600 transition-all duration-200"
+                    >
+                      <span className="text-sm font-medium">{category.name}</span>
+                      {category.hasSubcategories && (
+                        <img
+                          src={assets.dropdown_icon}
+                          className="h-3"
+                          alt=""
+                        />
+                      )}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </li>
           <li>
             <Link to="/about" className="text-gray-600 hover:text-[#db4444]">
@@ -68,7 +105,6 @@ const Header = () => {
               Contact
             </Link>
           </li>
-        
         </ul>
 
         {/* Right Section */}
@@ -202,9 +238,38 @@ const Header = () => {
               </Link>
             </li>
             <li>
-              <Link to="/collection" className="block text-gray-600">
+              {/* Mobile Collections Dropdown */}
+              <button
+                onClick={() => setShowMobileCollections(!showMobileCollections)}
+                className="block text-gray-600 w-full text-left"
+              >
                 Collection
-              </Link>
+              </button>
+              {showMobileCollections && (
+                <div className="ml-4 mt-2">
+  
+                  <ul className="space-y-2">
+                    {categories.map((category) => (
+                      <li key={category._id}>
+                        <Link
+                          to={`/collection?category=${category._id}`}
+                          className="flex items-center justify-between text-gray-600 hover:text-red-600 transition-all duration-200"
+                          onClick={() => setShowMobileMenu(false)}
+                        >
+                          <span className="text-sm font-medium">{category.name}</span>
+                          {category.hasSubcategories && (
+                            <img
+                              src={assets.dropdown_icon}
+                              className="h-3"
+                              alt=""
+                            />
+                          )}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </li>
             <li>
               <Link to="/about" className="block text-gray-600">
@@ -221,7 +286,6 @@ const Header = () => {
                 Contact
               </Link>
             </li>
-          
             {!isAuthenticated && (
               <>
                 <li>
